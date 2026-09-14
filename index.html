@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khuman's Car Game</title>
+    <link rel="stylesheet" href="CSS/styles.css">
+    <script src="" ></script>
+</head>
+<body>
+    <div id="game-container">
+   <div id="gameCanvas"></div>
+   <div id="hud" class="hidden">
+    <div id="scoring">
+     <div id="score">Score: 0</div>
+      <div id="score-details">
+<div id="distance">Distance: 0m</div>
+<div id="points">Points: 0.00</div>
+      </div>
+    </div>
+  
+    <div id="speed">0 km/h</div>
+    <div id="stage">Stage 1:Nyarugenge</div>
+    <div id="lap-counter">Lap: 1/3</div>
+   
+      <!--Radio Interface-->
+    <div id="radio-interface">
+     <div id="radio-title">Radio</div>
+     <div id="current-track">No Track Playing</div>
+     <div class="radio-controls">
+     <button class="radio-button" data-track="1">1</button>
+     <button class="radio-button" data-track="2">2</button>
+     <button class="radio-button" data-track="3">3/button>
+     <button class="radio-button" data-track="off">OFF</button>
+ </div>
+
+<div id="radio-instructions">Press 1-3 to change tracks,0 to turn off</div>
+    </div>
+   </div>
+
+  <!--Countdown Overlay-->
+   <div id="countdown" class="hidden">
+   <div class="countdown-text">3</div>
+   </div>
+    
+   <!--Start Screen-->
+   <div id="start-screen" class="screen">
+<div class="retro-logo">
+<div class="logo-text">FutureSkillsDrive</div>
+<div class="logo-shine"></div>
+</div>
+
+ <div class="rtb-banner">RTB Competition Future Skills</div>
+ <div class="start-prompt">Click to Play</div>
+ <br>
+ <br>
+  <p>Developed by KHUMAN and BALRAM</p>
+   </div>
+
+    <!--Menu (Initially hidden)-->
+   <div id="menu" class="screen hidden">
+  <h1 class="title">FutureSkillsDrive</h1>
+      <div class="menu-buttons">
+  <button id="startBtn" data-menu-state="main"></button>
+  <button id="resumeBtn" data-menu-state="pause" class="hidden"></button>
+  <button id="settingsBtn" ></button>
+  <button id="scoresBtn" ></button>
+  <button id="helpBtn" ></button>
+  <button id="exitBtn" data-menu-state="main"></button>
+  <button id="exitToMenuBtn" data-menu-state="pause" class="hidden"></button>
+
+
+
+
+
+
+
+      </div>
+
+
+
+   </div>
+
+
+
+
+    </div>
+</body>
+</html>
