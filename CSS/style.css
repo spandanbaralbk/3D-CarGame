@@ -115,4 +115,79 @@ body{
   backdrop-filter: blur(3px);
 }
 
+  /* Start screen styles */
+
+   #start-screen {
+    background: linear-gradient(135deg, rgba(0,0,0,0.3)0%,rgba(26,26,26,0.3) 100%);
+  backdrop-filter: blur(2px); 
+  }
+
+  .retro-logo{
+    position: relative;
+    margin-bottom: 40px;
+    perspective: 500px;
+  }
+
+ .logo-text{
+  font-size: 64px;
+  font-weight: bold;
+  color: #FFD700;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  text-shadow: 
+   0 0 10px rgba(255,215,0,0.7),
+   0 0 20px rgba(255,215,0,0.5),
+   0 0 30px rgba(255,215,0,0.3);
+
+   animation: logoFloat 3s ease-in-out infinite;
+ }
+
+ .logo-shine{
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+   90deg,
+   transparent,
+   rgba(255,255,255,0.8),
+   transparent
+  );
+animation: shine 3s infinite;
+transform: skewX(-20deg);
+ }
+
+ .rtb-banner{
+  font-weight: bold;
+  font-size: 28px;
+  color: #FF4500;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 60px;
+  animation: bannerWave 4s ease-in-out infinite;
+  text-shadow: 
+   0 0 10px rgba(255,69,0,0.7),
+   0 0 20px rgba(255,69,0,0.5);
+ }
+
+.start-prompt{
+  font-size: 32px;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255,255,255,0.5);
+  animation: pulse 1.5s ease-in-out infinite;
+  cursor: pointer; 
+}
+
+ 
+
+
+
+
+
+
+
+
+
+
 
