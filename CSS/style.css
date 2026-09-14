@@ -179,12 +179,58 @@ transform: skewX(-20deg);
   cursor: pointer; 
 }
 
+ /* Animations */
  
+  @keyframes logoFloat{
+   0%,100%{
+    transform: translateY(0) rotateX('0') ;
+   }
+   50%{
+    transform: translateY(-20px) rotateX('5deg');
+   }
+  }
+
+    @keyframes shine{
+      0%{
+        left: -100%;
+      }
+      20%{
+        left: 100%;
+      }
+      100%{
+        left: 100%;
+      }
+    }
+
+    @keyframes bannerWave {
+    0%,100%{
+      transform:translateY(0);
+    }
+    50%{
+      transform: translateY(-15px);
+    }
+    }
+
+     @keyframe pulse{
+       0%,100%{
+        opacity:1;
+        transform: scale(1);
+       }
+      50%{
+        opacity:0.5;
+        transform: scale(0.95);
+      }
+     }
+
+     hidden{
+      display: none !important;
+     }
+     .title{
+       font-size: 48px;
+       
 
 
-
-
-
+     }
 
 
 
