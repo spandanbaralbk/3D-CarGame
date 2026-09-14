@@ -61,29 +61,76 @@
    <div id="menu" class="screen hidden">
   <h1 class="title">FutureSkillsDrive</h1>
       <div class="menu-buttons">
-  <button id="startBtn" data-menu-state="main"></button>
-  <button id="resumeBtn" data-menu-state="pause" class="hidden"></button>
-  <button id="settingsBtn" ></button>
-  <button id="scoresBtn" ></button>
-  <button id="helpBtn" ></button>
-  <button id="exitBtn" data-menu-state="main"></button>
-  <button id="exitToMenuBtn" data-menu-state="pause" class="hidden"></button>
-
-
-
-
-
-
-
+  <button id="startBtn" data-menu-state="main">Start Race</button>
+  <button id="resumeBtn" data-menu-state="pause" class="hidden">Resume Game</button>
+  <button id="settingsBtn" >Settings</button>
+  <button id="scoresBtn" >High Scores</button>
+  <button id="helpBtn" >How to Play</button>
+  <button id="exitBtn" data-menu-state="main">Exit Game</button>
+  <button id="exitToMenuBtn" data-menu-state="pause" class="hidden">Exit to Menu</button>
       </div>
 
-
-
+      <div class="controls-section">
+       <h2>Game Controls</h2>
+       <div class="controls-grid">
+        <div class="control-item">
+          <span class="key">←→</span>
+            <span class="action">Steer Left/Right</span>
+        </div>
+        <div class="control-item">
+          <span class="key">🖱️</span>
+            <span class="action">Mouse Steering</span>
+        </div>
+        <div class="control-item">
+          <span class="key">Space</span>
+            <span class="action">Brake</span>
+        </div>
+        <div class="control-item">
+          <span class="key">F</span>
+            <span class="action">Free Ride Mode</span>
+        </div>
+        <div class="control-item">
+          <span class="key">Esc</span>
+            <span class="action">Menu</span>
+        </div>
+        <div class="control-item">
+          <span class="key">R</span>
+            <span class="action">Toggle Radio</span>
+        </div>
+       </div>
+      </div>
    </div>
 
-
-
-
+    <div id="settings-menu" class="screen hidden">
+    <h2>Settings</h2>
+      <div class="settings-content">
+        <div class="setting-item">
+         <label for="musicVolume">Music Volume</label>
+         <input type="range" id="sfxVolume" min="0" max="100" value="50">
+        </div>
+       <div class="setting-item">
+<label for="mouseControl">Mouse Steering</label>
+   <input type="checkbox" id="mouseControl">
+       </div>
+       <button id="backToMenu">Back To Menu</button>
+      </div>
     </div>
+
+    <!--High Scores Screen-->
+
+    <div id="high-scores" class="screen hidden">
+  <h2>High Scores</h2>
+  <button id="backToMenuFromScores" class="back-button">Back To Menu</button>
+    </div>
+    </div>
+  <!--Game Scripts-->
+ <script src="Js/sound.js"></script>
+ <script src="Js/enviroment.js"></script>
+ <script src="Js/road.js"></script>
+ <script src="Js/car3d.js"></script>
+ <script src="Js/aiVehicles.js"></script>
+ <script src="Js/obstacles.js" defer></script>
+ <script src="Js/game.js" defer></script>
+ <script src="Js/radio.js"></script>
 </body>
 </html>
