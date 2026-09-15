@@ -428,6 +428,79 @@ class Game {
         document.getElementById('lap-counter').textContent = `Lap: 1/${this.maxLaps}`;
                       }
 
+    
+                      showSettings(){
+                         document.getElementById('menu').classList.add('hidden');
+                         document.getElementById('settings-menu').classList.remove('hidden');
+                      }
+                      hideSettings(){
+                        document.getElementById('settings-menu').classList.add('hidden');
+                         this.showMenu();
+                      }
+
+                        showScores() {
+        document.getElementById('menu').classList.add('hidden');
+        document.getElementById('high-scores').classList.remove('hidden');
+    }
+
+    hideScores() {
+        document.getElementById('high-scores').classList.add('hidden');
+        this.showMenu();
+    }
+
+    showHelp() {
+        // Implement help/how to play display
+    }
+
+    exitGame() {
+        // Implement game exit logic
+        this.returnToTitle();
+    }
+                              updateGameState(){
+                                if (this.gameState==='start'){
+
+                                    //Update enviroment and road for preview
+                                    this.enviroment.update(this.previewSpeed);
+                                    this.road.update(this.previewspeed);
+                                    return;
+                                }
+                                if (this.gameState !=='playing') return;
+                                
+                                //update car position and physics
+                                this.car.update();
+
+                                //update ai traffic
+                                this.aiTraffic.update (this.car.speed, 0.016, this.car.distance);
+
+                                //update obstacles
+                                this.obstacles.update(this.car.speed,0.016,this.car.distance);
+
+                                //Check collisions with ai traffic
+                                if (this.aiTraffic.checkCollisions(this.car.mesh.position.x,this.car.mesh.position.z)){
+                                    this.handleAICollision();
+                                }
+                                //Check collisions with obstacles
+                                const obstacleCollision = this.obstacles.checkCollisons(
+                                    this.car.mesh.position.x,
+                                    this.car.mesh.position.z
+
+                                ); 
+                                if(obstacleCollision.Collision) {
+                                    this.handleCollision(obstacleCollsion);
+
+                                }     
+                                  //Update enviroment 
+                                  this.enviroment.update(this.car.speed);
+                                  this.road.update(this.car.speed);
+
+                                  //update hud
+                                  this.updateHUD();
+
+                                  //check for stage progression
+                                  this.checkStageProgression();
+                                  
+                                   }
+
 }
 
 window.addEventListener('load', () => {
