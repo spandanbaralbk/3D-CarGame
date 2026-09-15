@@ -1,345 +1,197 @@
-
 class Game {
-
     constructor() {
-
         this.setupScene();
-
         this.setupEventListeners();
-
-        this.gameState = 'start'; // start,playing,paused
-
-        this.menuState = 'main'; //main,pause
-
+        this.gameState = 'start'; // start, playing, paused
+        this.menuState = 'main'; // main, pause
         this.mouseControl = false;
-
         this.freeRideMode = false;
-
         this.radioPlaying = false;
-
-        this.previewSpeed = 40; //constant speed for preview 
-
+        this.previewSpeed = 40; // Constant speed for preview
         this.currentStage = 1;
-
         this.currentLap = 1;
-
         this.maxLaps = 6;
+        this.lapDistance = 1000; // Distance for each lap in meters
+        this.lastLapDistance = 0; // Track distance at last lap change
 
-        this.lapDistance = 1000; // Distance for each laps in meter
-
-        this.lastLapDistance = 0; //track distance at last lap change
-
-        //Initialize sound manager
+        // Initialize sound manager
         this.soundManager = new SoundManager();
 
-        //Initialize radio
-        this.radio = new radio();
+        // Initialize radio
+        this.radio = new Radio();
 
-        //scoring system 
+        // Scoring system
+        this.metersPerPoint = 50; // 50 meters = 1 point
+        this.highScores = JSON.parse(localStorage.getItem('highScores') || '[]');
 
-        this.metersPerPoint = 50; //50 meters =1 point
-
-        this.highScores = JSON.parse(localStorage.getItem('highscores') || '[]');
-
-        //initialize game components
-
+        // Initialize game components
         this.aiTraffic = new AITrafficManager();
-
-        this.aiTraffic.setScene(this.scene);
-
+        this.aiTraffic.setScene(this.scene); // Set the scene for AI traffic
         this.obstacles = new ObstacleManager();
+        this.obstacles.setScene(this.scene); // Set the scene for obstacles
 
-        this.obstacles.setScene(this.scene); //set the scene for obstacles
-
-        //start the game loop 
-
+        // Start the game loop
         this.lastUpdateTime = performance.now();
-
-        this.baseSpeed = 30; //base speed of the car
-
-        this.currentSpeed = this.baseSpeed;
-
-        this.speedEffects = []; //array to track active speed effects 
-
         this.animate();
 
+        this.baseSpeed = 30;  // Base speed of the car
+        this.currentSpeed = this.baseSpeed;
+        this.speedEffects = [];  // Array to track active speed effects
     }
 
     setupScene() {
-
-        //three.js setup
-
+        // Three.js setup
         this.scene = new THREE.Scene();
-
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-        this.renderer = new THREE.WebGLRenderer({
-
+        this.renderer = new THREE.WebGLRenderer({ 
             antialias: true,
-
             powerPreference: "high-performance"
-
         });
-
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-
         document.getElementById('gameCanvas').appendChild(this.renderer.domElement);
 
-        //add better lighting  for obstacles
-
+        // Add better lighting for obstacles
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-
         this.scene.add(ambientLight);
 
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-
         directionalLight.position.set(0, 10, 5);
-
         this.scene.add(directionalLight);
 
-        //Add spotlight for better obstacle visibility
-
+        // Add spotlight for better obstacle visibility
         const spotlight = new THREE.SpotLight(0xffffff, 0.5);
-
         spotlight.position.set(0, 10, 0);
-
         spotlight.target.position.set(0, 0, 10);
-
         spotlight.angle = Math.PI / 3;
-
         spotlight.penumbra = 0.5;
-
         spotlight.decay = 1;
-
         spotlight.distance = 50;
-
         this.scene.add(spotlight);
-
         this.scene.add(spotlight.target);
 
-        //initialize game components
-
-        this.enviroment = new Enviroment(this.scene);
-
+        // Initialize game components
+        this.environment = new Environment(this.scene);
         this.road = new Road(this.scene);
-
         this.car = new Car3D();
-
         this.scene.add(this.car.mesh);
 
-        //set up camera position -higher  and further back for obstacle visibility
-
+        // Set up camera position - higher and further back for better obstacle visibility
         this.camera.position.set(0, 4, -8);
-
-        this.camera.lookAt(0, 1, 15); //look a bit up for a better perspective
-
+        this.camera.lookAt(0, 1, 15); // Look slightly up for better perspective
     }
 
     setupEventListeners() {
-
         // Start screen listener for click
-
         document.getElementById('start-screen').addEventListener('click', () => {
-
             this.startGameIfReady();
-
         });
 
-        //start screen listener for spacebar
-
+        // Start screen listener for spacebar
         document.addEventListener('keydown', (e) => {
-
             if (e.code === 'Space' && this.gameState === 'start') {
-
                 this.startGameIfReady();
-
             }
-
         });
 
-        //mouse movement for steering 
-
+        // Mouse movement for steering
         document.addEventListener('mousemove', (e) => {
-
             if (this.gameState === 'playing' && this.mouseControl) {
-
                 const centerX = window.innerWidth / 2;
-
                 const mouseX = e.clientX;
-
                 const normalizedX = (mouseX - centerX) / (window.innerWidth / 4);
-
                 this.car.setMouseSteering(normalizedX);
-
             }
-
         });
 
-        //game controls
-
+        // Game controls
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-
         document.addEventListener('keyup', (e) => this.handleKeyUp(e));
 
         // Menu buttons
-
         document.getElementById('startBtn')?.addEventListener('click', () => this.startGame());
-
         document.getElementById('resumeBtn')?.addEventListener('click', () => this.resumeGame());
-
         document.getElementById('settingsBtn')?.addEventListener('click', () => this.showSettings());
-
         document.getElementById('scoresBtn')?.addEventListener('click', () => this.showScores());
-
         document.getElementById('helpBtn')?.addEventListener('click', () => this.showHelp());
-
         document.getElementById('exitBtn')?.addEventListener('click', () => this.exitGame());
-
         document.getElementById('exitToMenuBtn')?.addEventListener('click', () => this.exitToMenu());
-
         document.getElementById('backToMenu')?.addEventListener('click', () => this.hideSettings());
-
         document.getElementById('backToMenuFromScores')?.addEventListener('click', () => this.hideScores());
 
-        //responsive design 
-
+        // Responsive design
         window.addEventListener('resize', () => {
-
             this.camera.aspect = window.innerWidth / window.innerHeight;
-
             this.camera.updateProjectionMatrix();
-
             this.renderer.setSize(window.innerWidth, window.innerHeight);
-
         });
 
         // Settings controls
-
-        document.getElementById('mouseControl')?.addEventListener('change', (e) => {
-
+        document.getElementById('mouseControl').addEventListener('change', (e) => {
             this.mouseControl = e.target.checked;
-
             // Reset steering when switching control modes
-
             this.car.steerLeft = false;
-
             this.car.steerRight = false;
-
             this.car.currentX = 0;
-
             this.car.mesh.position.x = 0;
-
             this.car.mesh.rotation.y = 0;
-
         });
 
         // Volume controls
-
-        document.getElementById('musicVolume')?.addEventListener('input', (e) => {
-
+        document.getElementById('musicVolume').addEventListener('input', (e) => {
             const volume = e.target.value / 100;
-
             // Implement music volume control
-
         });
 
-        document.getElementById('sfxVolume')?.addEventListener('input', (e) => {
-
+        document.getElementById('sfxVolume').addEventListener('input', (e) => {
             const volume = e.target.value / 100;
-
             // Implement sound effects volume control
-
         });
-
     }
 
     handleKeyDown(e) {
-
         if (this.gameState === 'countdown') return; // Prevent controls during countdown
-
         if (this.gameState !== 'playing' && e.key.toLowerCase() !== 'r') return;
 
-        switch (e.key.toLowerCase()) {//convert to lowercase to handle both cases
-
+        switch(e.key.toLowerCase()) { // Convert to lowercase to handle both cases
             case 'arrowleft':
-
             case 'a':
-
                 if (!this.mouseControl) {
-
                     this.car.steerLeft = true;
-
-                    this.car.steerRight = false; // Prevent simultaneous left/right steering
-
+                    this.car.steerRight = false;
                 }
-
                 break;
-
             case 'arrowright':
-
             case 'd':
-
                 if (!this.mouseControl) {
-
                     this.car.steerRight = true;
-
-                    this.car.steerLeft = false; // Prevent simultaneous left/right steering
-
+                    this.car.steerLeft = false;
                 }
-
                 break;
-
             case 'arrowup':
-
             case 'w':
-
                 this.car.accelerate = true;
-
                 break;
-
             case 'arrowdown':
-
             case 's':
-
             case ' ': // Space
-
                 this.car.brake = true;
-
                 this.soundManager.playSound('brake');
-
                 break;
-
             case 'r': // Restart game
-
                 this.restartGame();
-
                 break;
-
             case 'f':
-
                 this.toggleFreeRide();
-
                 break;
-
             case 'escape':
-
                 if (this.gameState === 'playing') {
-
                     this.pauseGame();
-
                 } else if (this.gameState === 'paused') {
-
                     this.resumeGame();
-
                 }
-
                 break;
-
         }
-
     }
-
-    
 
     handleKeyUp(e) {
         if (this.gameState !== 'playing') return;
@@ -368,77 +220,75 @@ class Game {
                 break;
         }
     }
-        
-      toggleFreeRide(){
+
+    toggleFreeRide() {
         this.freeRideMode = !this.freeRideMode;
-        if (this.freeRideMode){
-            this.car.maxspeed=Infinity;
+        if (this.freeRideMode) {
+            this.car.maxSpeed = Infinity;
             document.getElementById('stage').textContent = 'Free Ride Mode';
-
-        } else{
-            this.car.maxspeed=200;
-            const stageConfig= this.aiTraffic.stages[this.currentStage];
-            document.getElementById('stage').textContent= `Stage ${this.currentStage}: ${stageConfig.name}`;
+        } else {
+            this.car.maxSpeed = 200;
+            const stageConfig = this.aiTraffic.stages[this.currentStage];
+            document.getElementById('stage').textContent = `Stage ${this.currentStage}: ${stageConfig.name}`;
         }
-      }
-    toggleRadio(){
-            this.radioPlaying=!this.radioPlaying;
-            if (this.radioPlaying){
-                this.soundManager.playMusic();
+    }
 
-            }
-            else{
-                this.soundManager.stopMusic();
-            }
-         }
-          returnToTitle(){
-            this.gameState='start';
-            document.getElementById('start-screen').classList.remove('hidden');
-            document.getElementById('menu').classlist.add('hidden');
-            document.getElementById('hud').classList.add('hidden');
-            document.getElementById('settings-menu').classlist.add('hidden');
-            this.resetGame();
-                      }
+    toggleRadio() {
+        this.radioPlaying = !this.radioPlaying;
+        if (this.radioPlaying) {
+            this.soundManager.playMusic();
+        } else {
+            this.soundManager.stopMusic();
+        }
+    }
 
+    returnToTitle() {
+        this.gameState = 'start';
+        document.getElementById('start-screen').classList.remove('hidden');
+        document.getElementById('menu').classList.add('hidden');
+        document.getElementById('hud').classList.add('hidden');
+        document.getElementById('settings-menu').classList.add('hidden');
+        this.resetGame();
+    }
 
-                      resetGame() {
-                        this.car.speed = 0;
-                        this.car.distance = 0;
-                        this.car.position.x=0;
-                        this.car.steerAngle=0;
-                        this.car.mesh.position.set(0,0,0);
-                        this.car.mesh.rotation.set(0,0,0);
-                        this.freeRideMode = false;
-                        this.currentStage=1;
-                        this.currentLap=1;
-                        this.lastLapDistance=0;
-                        this.aiTraffic.reset();
-                        this.obstacles.reset();
-                        if (this.radioPlaying){
-                            this.soundManager.stopMusic();
-                            this.radioPlaying = false;
-                        }
+    resetGame() {
+        this.car.speed = 0;
+        this.car.distance = 0;
+        this.car.position.x = 0;
+        this.car.steerAngle = 0;
+        this.car.mesh.position.set(0, 0, 0);
+        this.car.mesh.rotation.set(0, 0, 0);
+        this.freeRideMode = false;
+        this.currentStage = 1;
+        this.currentLap = 1;
+        this.lastLapDistance = 0;
+        this.aiTraffic.reset();
+        this.obstacles.reset();
+        if (this.radioPlaying) {
+            this.soundManager.stopMusic();
+            this.radioPlaying = false;
+        }
 
-                        //reset hud
-                        document.getElementById('score').textContent='Score: 0';
-                                document.getElementById('distance').textContent = 'Distance: 0m';
+        // Reset HUD
+        document.getElementById('score').textContent = 'Score: 0';
+        document.getElementById('distance').textContent = 'Distance: 0m';
         document.getElementById('points').textContent = 'Points: 0.00';
         document.getElementById('speed').textContent = '0 km/h';
         document.getElementById('stage').textContent = 'Stage 1: Nyarugenge';
         document.getElementById('lap-counter').textContent = `Lap: 1/${this.maxLaps}`;
-                      }
+    }
 
-    
-                      showSettings(){
-                         document.getElementById('menu').classList.add('hidden');
-                         document.getElementById('settings-menu').classList.remove('hidden');
-                      }
-                      hideSettings(){
-                        document.getElementById('settings-menu').classList.add('hidden');
-                         this.showMenu();
-                      }
+    showSettings() {
+        document.getElementById('menu').classList.add('hidden');
+        document.getElementById('settings-menu').classList.remove('hidden');
+    }
 
-                        showScores() {
+    hideSettings() {
+        document.getElementById('settings-menu').classList.add('hidden');
+        this.showMenu();
+    }
+
+    showScores() {
         document.getElementById('menu').classList.add('hidden');
         document.getElementById('high-scores').classList.remove('hidden');
     }
@@ -456,88 +306,250 @@ class Game {
         // Implement game exit logic
         this.returnToTitle();
     }
-                              updateGameState(){
-                                if (this.gameState==='start'){
 
-                                    //Update enviroment and road for preview
-                                    this.enviroment.update(this.previewSpeed);
-                                    this.road.update(this.previewspeed);
-                                    return;
-                                }
-                                if (this.gameState !=='playing') return;
-                                
-                                //update car position and physics
-                                this.car.update();
+    updateGameState() {
+        if (this.gameState === 'start') {
+            // Update environment and road for preview
+            this.environment.update(this.previewSpeed);
+            this.road.update(this.previewSpeed);
+            return;
+        }
 
-                                //update ai traffic
-                                this.aiTraffic.update (this.car.speed, 0.016, this.car.distance);
+        if (this.gameState !== 'playing') return;
 
-                                //update obstacles
-                                this.obstacles.update(this.car.speed,0.016,this.car.distance);
+        // Update car position and physics
+        this.car.update();
 
-                                //Check collisions with ai traffic
-                                if (this.aiTraffic.checkCollisions(this.car.mesh.position.x,this.car.mesh.position.z)){
-                                    this.handleAICollision();
-                                }
-                                //Check collisions with obstacles
-                                const obstacleCollision = this.obstacles.checkCollisons(
-                                    this.car.mesh.position.x,
-                                    this.car.mesh.position.z
+        // Update AI traffic
+        this.aiTraffic.update(this.car.speed, 0.016, this.car.distance);
 
-                                ); 
-                                if(obstacleCollision.Collision) {
-                                    this.handleCollision(obstacleCollsion);
+        // Update obstacles
+        this.obstacles.update(this.car.speed, 0.016, this.car.distance);
 
-                                }     
-                                  //Update enviroment 
-                                  this.enviroment.update(this.car.speed);
-                                  this.road.update(this.car.speed);
+        // Check collisions with AI traffic
+        if (this.aiTraffic.checkCollisions(this.car.mesh.position.x, this.car.mesh.position.z)) {
+            this.handleAICollision();
+        }
 
-                                  //update hud
-                                  this.updateHUD();
+        // Check collisions with obstacles
+        const obstacleCollision = this.obstacles.checkCollisions(
+            this.car.mesh.position.x, 
+            this.car.mesh.position.z
+        );
+        
+        if (obstacleCollision.collision) {
+            this.handleCollision(obstacleCollision);
+        }
 
-                                  //check for stage progression
-                                  this.checkStageProgression();
-                                  
-                                   }
+        // Update environment
+        this.environment.update(this.car.speed);
+        this.road.update(this.car.speed);
 
+        // Update HUD
+        this.updateHUD();
 
+        // Check for stage progression
+        this.checkStageProgression();
+    }
 
+    showCollisionEffect(effect) {
+        const gameCanvas = document.getElementById('gameCanvas');
+        
+        // Remove any existing flash effects first
+        const existingFlashes = document.querySelectorAll('.collision-flash');
+        existingFlashes.forEach(flash => flash.remove());
+        
+        // Clear any existing animations
+        if (gameCanvas.animation) {
+            gameCanvas.animation.cancel();
+        }
+        
+        // Apply screen shake based on effect intensity
+        const intensity = effect.shake;
+        const duration = effect.duration;
+        
+        // Create milder keyframes for the shake animation
+        const shakeFrames = [];
+        const steps = 5;
+        for (let i = 0; i < steps; i++) {
+            const offset = 10 * intensity * (Math.random() - 0.5); // Reduced from 20 to 10
+            const rotateOffset = 1 * intensity * (Math.random() - 0.5); // Reduced from 2 to 1
+            shakeFrames.push({
+                transform: `translate(${offset}px, ${offset}px) rotate(${rotateOffset}deg)`
+            });
+        }
+        
+        // Add ending keyframe to return to normal
+        shakeFrames.push({
+            transform: 'translate(0, 0) rotate(0deg)'
+        });
+        
+        // Apply the animation and store its reference
+        gameCanvas.animation = gameCanvas.animate(shakeFrames, {
+            duration: duration,
+            iterations: 1
+        });
+        
+        // Create flash effect with reduced opacity and duration
+        const flash = document.createElement('div');
+        flash.className = 'collision-flash';
+        flash.style.position = 'fixed';
+        flash.style.top = '0';
+        flash.style.left = '0';
+        flash.style.right = '0';
+        flash.style.bottom = '0';
+        flash.style.backgroundColor = `rgba(255, 255, 255, ${0.2 * intensity})`; // Reduced from 0.3 to 0.2
+        flash.style.pointerEvents = 'none';
+        flash.style.transition = 'opacity 0.2s ease-out';
+        flash.style.zIndex = '1000';
+        document.body.appendChild(flash);
+        
+        // Fade out and remove flash effect
+        setTimeout(() => {
+            flash.style.opacity = '0';
+            setTimeout(() => flash.remove(), 200);
+        }, duration/4); // Reduced from duration/2 to duration/4
 
-             
-                                  howCollisionEffect(effect){
-                                    const gameCanvas= document.getElementById('gameCanvas');
+        this.soundManager.playSound('crash');
+    }
 
-                                    //remove any existing flash effects first
-                                    const existingFlashes = document.querySelectorAll ('.collison-flash');
-                                    existingFlashes.forEach(flash=> flash.remove());
+    handleCollision(obstacle) {
+        if (this.canPlaySound()) {
+            const intensity = Math.min(1, this.currentSpeed / 100);
+            this.soundManager.playCrashSound(intensity);
+        }
 
-                                    //clear any existing animations
-                                    if (gameCanvas.animation){
-                                        gameCanvas.animation.cancel();
-                                    }
-                                    //apply screen shake based on efect intesity
-                                    const intensity = effect.shake;
-                                    const duration= effect.duration;
+        // Apply speed effect
+        if (obstacle.getDamageEffect().speedEffect) {
+            this.addSpeedEffect(obstacle.getDamageEffect().speedEffect);
+        }
 
-                                    //create milder keyframes for the shake animation 
-                                    const shakeFrames = [];
-                                    const steps = 5;
-                                    for( let i =0 ; i < steps; i++ ){
-                                                    const offset =10 * intensity * (Math.random () - 0.5 );//reduced from 20 to 10
-                                                    const rotateOffset = 1* intensity * (math.random()-0.5);//reduced from 2 to 1
-                                                    shakeFrames.push({
-                                                        transform : `translate(${offset}px, ${offset}px) rotate(${rotateOffset}deg)`
-                                                    });
-                                    }
-                                                 //add ending keyframes to return to normal 
-                                  }
+        // Show collision effect
+        this.showCollisionEffect(obstacle.getDamageEffect());
+    }
 
-}
+    handleAICollision() {
+        if (this.canPlaySound()) {
+            const intensity = Math.min(1, this.currentSpeed / 100);
+            this.soundManager.playCrashSound(intensity);
+        }
 
-window.addEventListener('load', () => {
+        // Get collision details from AI traffic
+        const collisionDetails = this.aiTraffic.getCollisionDetails(
+            this.car.mesh.position.x,
+            this.car.mesh.position.z,
+            this.car.speed
+        );
 
-    new Game();
+        if (collisionDetails.isOvertaking) {
+            // If we're overtaking (moving faster than the AI vehicle), just apply a small speed reduction
+            this.car.speed *= 0.3;
+        } else {
+            // If it's a real collision (not overtaking), reduce speed more significantly
+            this.car.speed *= 0.5;
+            // Show major collision effect
+            this.showCollisionEffect({
+                shake: 1.0,
+                duration: 1000,
+                sound: 'crash'
+            });
+        }
+    }
 
-});
+    checkStageProgression() {
+        if (this.freeRideMode) return;
 
+        // Check if we've completed a lap (every 500 meters)
+        const currentDistance = this.car.distance;
+        const lapProgress = currentDistance - this.lastLapDistance;
+
+        if (lapProgress >= this.lapDistance) {
+            this.currentLap++;
+            this.lastLapDistance = currentDistance;
+
+            if (this.currentLap > this.maxLaps) {
+                this.handleVictory();
+                return;
+            }
+
+            // Show lap transition
+            const transition = document.createElement('div');
+            transition.className = 'stage-transition';
+            transition.textContent = `Lap ${this.currentLap} of ${this.maxLaps}`;
+            document.body.appendChild(transition);
+            setTimeout(() => document.body.removeChild(transition), 2000);
+            
+            // Update lap counter display
+            document.getElementById('lap-counter').textContent = 
+                `Lap: ${this.currentLap}/${this.maxLaps}`;
+
+            this.soundManager.playSound('point');
+        }
+
+        // Normal stage progression
+        const stage = this.aiTraffic.getCurrentStage(this.car.distance);
+        if (stage !== this.currentStage) {
+            this.currentStage = stage;
+            this.showStageTransition();
+            
+            // Increase difficulty
+            this.aiTraffic.difficulty = this.currentStage;
+            this.obstacles.difficulty = this.currentStage;
+
+            // Update environment for Magic Garden
+            this.environment.updateStage(this.currentStage);
+
+            // Update stage display
+            const stageConfig = this.aiTraffic.stages[this.currentStage];
+            document.getElementById('stage').textContent = 
+                `Stage ${this.currentStage}: ${stageConfig.name}`;
+
+            // Play special sound for Magic Garden entry
+            if (this.currentStage === 4) {
+                this.soundManager.playSound('magic');
+            } else {
+                this.soundManager.playSound('point');
+            }
+        }
+    }
+
+    handleVictory() {
+        this.gameState = 'victory';
+        const victoryScreen = document.createElement('div');
+        victoryScreen.className = 'screen';
+        victoryScreen.innerHTML = `
+            <div class="victory-text">
+                <h1>You've Reached the Magic Garden!</h1>
+                <div class="final-score">Final Score: ${document.getElementById('score').textContent.split(': ')[1]}</div>
+                <button onclick="location.reload()">Play Again</button>
+            </div>
+        `;
+        document.body.appendChild(victoryScreen);
+    }
+
+    showStageTransition() {
+        const stageConfig = this.aiTraffic.stages[this.currentStage];
+        const transition = document.createElement('div');
+        transition.className = 'stage-transition';
+        
+        // Add special styling for Magic Garden
+        if (this.currentStage === 4) {
+            transition.classList.add('magic-garden');
+            transition.innerHTML = `
+                <span style="font-size: 1.2em">🌸</span>
+                ${stageConfig.name}
+                <span style="font-size: 1.2em">🌸</span>
+                <br>
+                <span style="font-size: 0.8em; color: #FFB7C5">${stageConfig.description}</span>
+            `;
+        } else {
+            transition.textContent = `Entering ${stageConfig.name} - ${stageConfig.description}`;
+        }
+        
+        document.body.appendChild(transition);
+
+        // Remove after animation (longer for Magic Garden)
+        setTimeout(() => {
+            document.body.removeChild(transition);
+        }, this.currentStage === 4 ? 3000 : 2000);
+    }
