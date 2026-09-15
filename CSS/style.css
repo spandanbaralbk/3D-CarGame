@@ -211,7 +211,7 @@ transform: skewX(-20deg);
     }
     }
 
-     @keyframe pulse{
+     @keyframes pulse{
        0%,100%{
         opacity:1;
         transform: scale(1);
@@ -227,10 +227,161 @@ transform: skewX(-20deg);
      }
      .title{
        font-size: 48px;
-       
-
-
+       margin-bottom: 20px;
+       color: #FF4500;
+       text-transform: uppercase;
+       letter-spacing: 2px;
      }
+
+     .menu-buttons{
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+     }
+
+     .menu-buttons button{
+       padding: 15px 30px;
+      font-size: 20px;
+      border: none;
+      border-radius: 5px;
+      background: linear-gradient(45deg, #4A90E2, #357ABD);
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      min-width: 200px;
+     }
+
+     .menu-buttons button:hover{
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(74,144,226,0.5);
+     }
+
+     .controls-section{
+      background: rgba(0,0,0,0.5);
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+     }
+
+     .controls-section h2{
+      text-align: center;
+      margin-bottom: 15px;
+      color: #FFD700;
+     }
+
+     .controls-grid{
+      display: grid;
+      grid-template-columns: repeat(2,1fr);
+      gap: 15px;
+      padding: 10px;
+     }
+
+     .control-item{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 5px;
+     }
+
+     .key{
+      background: #4A90E2;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      min-width: 30px;
+      text-align: center;
+     }
+
+     .action{
+      color: #ccc;
+     }
+ 
+     #settings-menu{
+      background: rgba(0,0,0,0.9);
+     }
+
+     .settings-content{
+      background: rgba(255,255,255,0.1);
+      padding: 30px;
+      border-radius: 10px;
+      min-width: 300px;
+     }
+
+     .setting-item{
+      margin-bottom: 20px;
+     }
+
+     .setting-item label{
+       display: block;
+       margin-bottom: 8px;
+       color: #FFD700;
+     }
+
+     .setting-item input[type="range"]{
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      -webkit-appearance: none;
+      background: #4A90E2;
+     }
+
+      .setting-item input[type="checkbox"]{
+        width: 20px;
+        height: 20px;
+      }
+
+      #backToMenu{
+        width: 100%;
+        padding: 10px;
+        margin-top: 20px;
+        background: #FF4500;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      #backToMenu:hover{
+        background: #ff6347;
+      }
+
+      #countdown{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+      }
+
+      .countdown-text{
+        font-size: 150px;
+        color: #ffd700;
+        font-weight: bold;
+        text-shadow: 
+        0 0 20px rgba(255,215,0,0.7),
+        0 0 40px rgba(255,215,0,0.5);
+        animation: pulseScale 1s ease-in-out;
+      }
+
+      @keyframes pulseScale{
+       0% {transform:scale(0.5);opacity: 0;}
+       50%{transform: scale(1.2); opacity: 1;}
+       100%{transform: scale(1); opacity: 1;}
+      }
+      
+
+
+
+
 
 
 
