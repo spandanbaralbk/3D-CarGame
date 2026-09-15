@@ -501,6 +501,38 @@ class Game {
                                   
                                    }
 
+
+
+
+             
+                                  howCollisionEffect(effect){
+                                    const gameCanvas= document.getElementById('gameCanvas');
+
+                                    //remove any existing flash effects first
+                                    const existingFlashes = document.querySelectorAll ('.collison-flash');
+                                    existingFlashes.forEach(flash=> flash.remove());
+
+                                    //clear any existing animations
+                                    if (gameCanvas.animation){
+                                        gameCanvas.animation.cancel();
+                                    }
+                                    //apply screen shake based on efect intesity
+                                    const intensity = effect.shake;
+                                    const duration= effect.duration;
+
+                                    //create milder keyframes for the shake animation 
+                                    const shakeFrames = [];
+                                    const steps = 5;
+                                    for( let i =0 ; i < steps; i++ ){
+                                                    const offset =10 * intensity * (Math.random () - 0.5 );//reduced from 20 to 10
+                                                    const rotateOffset = 1* intensity * (math.random()-0.5);//reduced from 2 to 1
+                                                    shakeFrames.push({
+                                                        transform : `translate(${offset}px, ${offset}px) rotate(${rotateOffset}deg)`
+                                                    });
+                                    }
+                                                 //add ending keyframes to return to normal 
+                                  }
+
 }
 
 window.addEventListener('load', () => {
