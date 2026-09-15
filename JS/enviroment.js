@@ -68,6 +68,69 @@ class Enviroment{
           transparent: true,
           opacity: 0.9 //increased opacity
         });
+     
+         const cloudGroup = new THREE.Group();
+
+         //create denser cloud formations
+
+         for(let i=0;i<8;i++){ //more pieces per cloud
+           const cloudPiece = new THREE.Mesh(cloudGeometry,cloudMaterial);
+           cloudPiece.position.set(
+            MediaSourceHandle.random() * 10 -5,
+            Math.random() *4 -2,
+            Math.random() * 10 - 5
+           );
+     
+            cloudPiece.scale.set(
+              Math.random()*1.5 +1.0, //larger scale
+              Math.random() *0.8 +0.6,
+              Math.random()* 1.5 +1.0
+            );
+
+            cloudGroup.add(cloudPiece);           
+         }
+         
+          cloudGroup.position.set(x,y,z);
+          this.scene.add(cloudGroup);
+          this.clouds.push(cloudGroup);
+    }
+     
+     createHills(){
+        const hillGeometry = new THREE.PlaneGeometry(1000,1000,150,150);
+        const vertices = hillGeometry.attributes.position.array;
+
+        //create rolling hills
+        for(let i=0;i<vertices.length;i+=3){
+            const x=vertices[i];
+            const z = vertices[i+2];
+         
+            const baseHeight=
+            Math.sin(x * 0.02)* 12 + Math.sin(z*0.02)*10 + Math.sin(x*0.05+z*0.05)*8;
+
+             //add smaller grass mound details
+
+             const detail =
+             Math.sin(x*0.1)*2*Math.sin(z*0.1)+ //small bumps
+             Math.cos(x*0.08-z*0.08)*3;  //medium
+
+             const distanceFromRoad =Math.abs(x);
+             let heightMultiplier=1.0;
+
+             if(distanceFromRoad>30){
+                heightMultiplier = 1.0 +(distanceFromRoad - 30)*0.03;
+
+             }
+
+             vertices[i+1]=(baseheight+detail)* heightMultiplier;
+
+             //flatten area near the road
+             if(distanceFromRoad<10){
+                vertices[i+1]*=(distanceFromRoad-5)/5;
+                if(distanceFromRoad<5) vertices[i+1]=0;
+             }
+        }
+
+        
      }
 
 
