@@ -81,6 +81,76 @@ class game {
         this.camera.position.set(0, 4, -8);
         this.camera.lookAt(0, 1, 15); //look a bit up for a better perspective
     }
+    etupEventListeners() {
+        // Start screen listener for click
+        document.getElementById('start-screen').addEventListener('click', () => {
+            this.startGameIfReady();
+        });
+
+        //start screen listener for spacebar
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && this.ganeState === 'start') {
+                this.startStartGameIfReady();
+            }
+        });
+
+        //mouse movement for steering 
+        document.addEventListener('mousemove', (e) => {
+            if (this.gameState === 'playing' && this.mouseControl) {
+                const centerX = window.innerWidth / 2;
+                const mouseX = e.clientX;
+                const normalizedX = (mouseX - centerX) / (window.innerWidth / 4);
+                this.car.setMouseSteering(normalizedX);
+            }
+        });
+        //game controls
+        document.addEventListener('keydown', (e) => this.handKeyDown(e));
+        document.addEventListener('keyup', (e) => this.handKeyUp(e));
+
+        // Menu buttons
+        document.getElementById('startBtn') ?.addEventListener('click', () => this.startGame());
+        document.getElementById('resumeBtn') ?.addEventListener('click', () => this.resumeGame());
+        document.getElementById('settingsBtn') ?.addEventListener('click', () => this.showSettings());
+        document.getElementById('scoresBtn') ?.addEventListener('click', () => this.showScores());
+        document.getElementById('helpBtn') ?.addEventListener('click', () => this.showHelp());
+        document.getElementById('exitBtn') ?.addEventListener('click', () => this.exitGame());
+        document.getElementById('exitToMenuBtn') ?.addEventListener('click', () => this.exitToMenu());
+        document.getElementById('backToMenu') ?.addEventListener('click', () => this.hideSettings());
+        document.getElementById('backToMenuFromScores') ?.addEventListener('click', () => this.hideScores());
+       
+       
+        //responsive design 
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+                 // Settings controls
+        document.getElementById('mouseControl').addEventListener('change', (e) => {
+            this.mouseControl = e.target.checked;
+            // Reset steering when switching control modes
+            this.car.steerLeft = false;
+            this.car.steerRight = false;
+            this.car.currentX = 0;
+            this.car.mesh.position.x = 0;
+            this.car.mesh.rotation.y = 0;
+        });
+
+        // Volume controls
+        document.getElementById('musicVolume').addEventListener('input', (e) => {
+            const volume = e.target.value / 100;
+            // Implement music volume control
+        });
+
+        document.getElementById('sfxVolume').addEventListener('input', (e) => {
+            const volume = e.target.value / 100;
+            // Implement sound effects volume control
+        });
+
+
+    }
+    
 }
 //initialize game when the window loads
 window.addEventlistener('load', () => {
