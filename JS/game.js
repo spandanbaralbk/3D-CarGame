@@ -381,7 +381,52 @@ class Game {
             document.getElementById('stage').textContent= `Stage ${this.currentStage}: ${stageConfig.name}`;
         }
       }
-    
+    toggleRadio(){
+            this.radioPlaying=!this.radioPlaying;
+            if (this.radioPlaying){
+                this.soundManager.playMusic();
+
+            }
+            else{
+                this.soundManager.stopMusic();
+            }
+         }
+          returnToTitle(){
+            this.gameState='start';
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('menu').classlist.add('hidden');
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('settings-menu').classlist.add('hidden');
+            this.resetGame();
+                      }
+
+
+                      resetGame() {
+                        this.car.speed = 0;
+                        this.car.distance = 0;
+                        this.car.position.x=0;
+                        this.car.steerAngle=0;
+                        this.car.mesh.position.set(0,0,0);
+                        this.car.mesh.rotation.set(0,0,0);
+                        this.freeRideMode = false;
+                        this.currentStage=1;
+                        this.currentLap=1;
+                        this.lastLapDistance=0;
+                        this.aiTraffic.reset();
+                        this.obstacles.reset();
+                        if (this.radioPlaying){
+                            this.soundManager.stopMusic();
+                            this.radioPlaying = false;
+                        }
+
+                        //reset hud
+                        document.getElementById('score').textContent='Score: 0';
+                                document.getElementById('distance').textContent = 'Distance: 0m';
+        document.getElementById('points').textContent = 'Points: 0.00';
+        document.getElementById('speed').textContent = '0 km/h';
+        document.getElementById('stage').textContent = 'Stage 1: Nyarugenge';
+        document.getElementById('lap-counter').textContent = `Lap: 1/${this.maxLaps}`;
+                      }
 
 }
 
