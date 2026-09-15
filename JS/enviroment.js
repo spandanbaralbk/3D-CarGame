@@ -11,18 +11,18 @@ class Enviroment{
 
         this.createSky();
         this.createHills();
-        this.createBuildings(); //add building creations
-        this.createDecorations();
+        this.createBuildings(); //add building creations 
+        this.createDecorations(); 
         this.createMagicGarden();
     }
-    
+     
     createSky(){
         //create a large sphere for the sky
         const skyGeometry = new THREE.SphereGeometry(500,32,32);
         this.skyMaterial = new THREE.ShaderMaterial({
              uniforms:{
                 topColor: {value: new THREE.Color(0x0077ff)},
-                bottomColor: {value: new THREE.Color(0x87CEEB) },
+                bottomColor: {value: new THREE.Color(0x87CEEB) }, 
                 offset:{value:33},
                 exponent: {value:0.6}
              },
@@ -34,7 +34,7 @@ class Enviroment{
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
              }
           `,
-            fragmentShader: `
+            fragmentShader: ` 
             uniform vec3 topColor;
             uniform vec3 bottomColor;
             uniform float offset;
@@ -78,7 +78,7 @@ class Enviroment{
            cloudPiece.position.set(
             MediaSourceHandle.random() * 10 -5,
             Math.random() *4 -2,
-            Math.random() * 10 - 5
+            Math.random() * 10 - 5 
            );
      
             cloudPiece.scale.set(
@@ -88,7 +88,7 @@ class Enviroment{
             );
 
             cloudGroup.add(cloudPiece);           
-         }
+         } 
          
           cloudGroup.position.set(x,y,z);
           this.scene.add(cloudGroup);
@@ -101,7 +101,7 @@ class Enviroment{
 
         //create rolling hills
         for(let i=0;i<vertices.length;i+=3){
-            const x=vertices[i];
+            const x=vertices[i]; 
             const z = vertices[i+2];
          
             const baseHeight=
@@ -130,7 +130,7 @@ class Enviroment{
              }
         }
 
-        hillGeometry.computeVertexNormals();
+        hillGeometry.computeVertexNormals();  
 
         //create grass materials with different shades
 
@@ -150,7 +150,7 @@ class Enviroment{
             shininess:8,
             flatShading:true
            })
-        ];
+        ];    
 
 
         //create grass sections
@@ -175,10 +175,82 @@ class Enviroment{
          flatShading:true
         });
 
+        const darkGround = new THREE.Mesh(groundGeometry,groundMaterial);
+           darkGround.rotation.x = -Math.PI /2;
+           darkGround.position.y = -2.1;  //slightly below grass
+           this.scene.add(darkGround);
+
+           // Create distant hills with grass
+
+           const distantHillsGeometry = new THREE.PlaneGeometry(2000,1000,50,50);
+           const hillVertices = distantHillsGeometry.attributes.position.array;
+
+             for(let i=0;i<hillVertices.length;i+=3){
+
+              const x =hillVertices[i];
+              const z =hillVertices[i+2];  
+
+              //Create larger , smoother hills 
+              hillVertices[i+1]=
+              Math.sin(x*0.01)*30+
+              Math.sin(z*0.01)*25+
+              Math.sin(x*0.02+z*0.02)* 20;
+             }    
+            distantHillsGeometry.computeVertexNormals(); 
+
+            //create distant hills with slightly darker grass
+                
+             const distantHillsMaterial = new THree.MeshPhongMaterial({
+              color:0x1b4f2f,
+              shininess:8,
+              flatShading:true,
+              opacity:0.9,
+              transparent:true
+             });
+
+             const distantHills = new THREE.Mesh(distantHillsGeometry,distantHillsMaterial);
+             distantHills.rotation.x= -Math.PI /2;
+             distantHills.position.z = -500;
+             distantHills.position.y = -10;
+             this.scene.add(distantHills);
+             this.hills.push(distantHills);
+
+             //Add grass detail patches
+             const grassPatchGeometry = new THREE.PlaneGeometry(2,2);
+             const grassPatchMaterial = new THREE.MeshPhongMaterial({
+               color:0x8bc34a,
+               shininess:5,
+               transparent:true,
+               opacity:0.9,
+               side: THREE.DoubleSide
+             });
+
+             for(let i=0;i<500;i++){
+               const patch = new THREE.Mesh(grassPatchGeometry,grassPatchMaterial);
+               const x = (Math.random()-0.5)*1000;
+               const z = Math.random() * 1000 - 500;
 
 
+               //skip patches too close to the road
+               if(Math.abs(x)<8) continue;
 
+               patch.position.set(x,0.1,z);
+               patch.rotation.x=-Math.PI/2;
+               patch.rotation.z= Math.random() * Math.PI;
+               patch.scale.set(
+                
+                  0.5+Math.random() * 1.5,
+                  0.5 + Math.random()*1.5,
+                  1
 
+               );
+
+               this.scene.add(patch);
+               this.decorations.push(patch);
+
+             }
+
+            
 
 
         }
@@ -186,4 +258,3 @@ class Enviroment{
      }
 
 
-}
