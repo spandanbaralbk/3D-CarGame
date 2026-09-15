@@ -410,11 +410,108 @@ transform: skewX(-20deg);
           animation: magicFadeInOut 3s ease-in-out;
         }
 
-        
+        @keyframes magicFadeInOut{
+          0%{
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px) scale(0.8);
+            filter: blur(10px);
+          }
+           20%{
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1.1);
+            filter: blur(0);
+           }
+           80%{
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+            filter: blur(0);
+           }
+           100%{
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px) scale(0.8);
+            filter: blur(10px);
+           }
+        }
 
+         /*Collision Effect*/
 
+         @keyframes shake{
+          0%, 100% {transform: translateX(0);}
+          25%{transform: translateX(-5px);}
+          75%{transform: translate(5px);}
+         }
+         
 
+          /*Stage Transition Animation*/
+          @keyframes fadeInOut{
+            0%{opacity: 0; transform: translateX(-50%) translateY(20px);}
+            20%{opacity: 1; transform: translateX(-50%) translateY(0);}
+            80%{opacity: 1; transform: translateX(-50%) translateY(0);}
+            100%{opacity: 0; transform: translateX(-50%) translateY(-20px);}
+          }
 
+          /*Pause Menu Styles*/
+          #pause-menu{
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+          }
+           
+          #pause-menu .menu-content{
+            background: rgba(0,0,0,0.7);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid rgba(255,215,0,0.3);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+          }
 
+          #pause-menu h2{
+            color: #FFD700;
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+          }
 
+          #pause-menu .menu-buttons {
+           min-width: 250px;
+          }
 
+          #pause-menu .menu-buttons button{
+             width: 100%;
+             margin: 5px 0;
+             background: linear-gradient(45deg,#2c3e50,#3498db);
+             border: 1px solid rgba(255,255,255,0.1);
+          }
+
+          #pause-menu .menu-buttons button:hover{
+            background: linear-gradient(45deg, #3498db, #2c3e50);
+          }
+
+          /*Menu Styles*/
+          #menu{
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+          }
+           
+          #menu .menu-buttons{
+            min-width: 250px;
+          }
+
+          #menu .menu-buttons button{
+            width: 100%;
+            margin: 5px 0;
+            background: linear-gradient(45deg,#2c3e50,#3498db);
+            border: 1px solid rgba(255,255,255,0.1);
+          }
+
+          #menu .menu-buttons button:hover{
+            background: linear-gradient(45deg,#3498db,#2c3e50);
+          }
+
+          #menu.title{
+            color: #FFD700;
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+          }
