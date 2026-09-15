@@ -341,6 +341,48 @@ class Game {
 
     
 
+    handleKeyUp(e) {
+        if (this.gameState !== 'playing') return;
+
+        switch(e.key.toLowerCase()) { // Convert to lowercase to handle both cases
+            case 'arrowleft':
+            case 'a':
+                if (!this.mouseControl) {
+                    this.car.steerLeft = false;
+                }
+                break;
+            case 'arrowright':
+            case 'd':
+                if (!this.mouseControl) {
+                    this.car.steerRight = false;
+                }
+                break;
+            case 'arrowup':
+            case 'w':
+                this.car.accelerate = false;
+                break;
+            case 'arrowdown':
+            case 's':
+            case ' ': // Space
+                this.car.brake = false;
+                break;
+        }
+    }
+        
+      toggleFreeRide(){
+        this.freeRideMode = !this.freeRideMode;
+        if (this.freeRideMode){
+            this.car.maxspeed=Infinity;
+            document.getElementById('stage').textContent = 'Free Ride Mode';
+
+        } else{
+            this.car.maxspeed=200;
+            const stageConfig= this.aiTraffic.stages[this.currentStage];
+            document.getElementById('stage').textContent= `Stage ${this.currentStage}: ${stageConfig.name}`;
+        }
+      }
+    
+
 }
 
 window.addEventListener('load', () => {
