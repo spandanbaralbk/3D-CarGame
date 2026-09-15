@@ -130,7 +130,59 @@ class Enviroment{
              }
         }
 
-        
+        hillGeometry.computeVertexNormals();
+
+        //create grass materials with different shades
+
+        const grassMaterials=[
+           new THREE.MeshPhongMaterial({
+            color:0x7cb342,
+             shininess: 8,
+             flatShading:true
+           }),
+           new THREE.MeshPhongMaterial({
+            color:0x558b2f,
+            shininess: 8,
+            flatShading: true
+           }),
+           new THREE.MeshPhongMaterial({
+            color:0x33691e,
+            shininess:8,
+            flatShading:true
+           })
+        ];
+
+
+        //create grass sections
+            
+        for(let i=0;i<3;i++){
+            const grassland = new THREE.Mesh(hillGeometry,grassMaterials[i%3]);
+            grassland.rotation.x = -Math.PI / 2;
+            grassland.position.z = i*1000 - 500;
+            grassland.position.y = -2 - (i*0.2);
+            grassland.position.z = (Math.random()-0.5)*0.1;
+
+            this.scene.add(grassland);
+            this.hills.push(grassland);
+        }
+
+        //Add darker base ground underneath
+
+        const groundGeometry = new THREE.PlaneGeometry(1000,1000);
+        const groundMaterial = new Three.MeshPhongMaterial({
+         color: 0x2f3b1c,
+         shininess:5,
+         flatShading:true
+        });
+
+
+
+
+
+
+
+        }
+
      }
 
 
