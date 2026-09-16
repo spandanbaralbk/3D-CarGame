@@ -247,13 +247,63 @@ class Enviroment{
 
                this.scene.add(patch);
                this.decorations.push(patch);
-
              }
-
-            
-
-
         }
+
+
+        createCow(){
+         const cow = new THREE.Group();
+         
+         //body
+         const bodyGeometry = new THREE.BoxGeometry(2,1.2,3);
+         const bodyMaterial = new THREE.MeshPhongMaterial({color:0x4a4a4a}); //dark grey yall
+      
+          const body = new THREE.Mesh(bodyGeometry,bodyMaterial);
+
+          body.position.y=1.5;
+          cow.add(body);
+
+          //Head
+          const headGeometry = new THREE.BoxGeometry(0.8,0.8,1.2);
+          const head = new THREE.Mesh(headGeometry,bodyMaterial);
+          head.position.set(0,2.1,1.8);
+          cow.add(head);
+
+          //legs
+          const legGeometry = new THREE.BoxGeometry(0.4,1.2,0.4);
+          const legMaterial = new THREE.MeshPhongMaterial({color:0x333333}); 
+
+          const positions =[
+             [-0.7,0.6,1],
+             [0.7,0.6,1],
+             [-0.7,0.6,-1],
+             [0.7,0.6,-1]
+          ];
+
+          positions.forEach(pos=>{
+            const leg = new THREE.Mesh(legGeometry,legMaterial);
+            leg.position.set(...pos);
+            cow.add(leg);
+          });
+
+          const spotGeometry = new THREE.CircleGeometry(0.3,8);
+          const spotMaterial = new THREE.MeshPhongMaterial({
+            color:0x8b4513,
+            side: THREE.DoubleSide
+          });
+
+          for (let i=0;i<5;i++){
+            const spot = new THREE.Mesh(spotGeometry,spotMaterial);
+            spot.rotation.y = Math.PI/2;
+            spot.position.set(
+               (Math.random()-0.5)*1.5,
+               1.5 + (Math.random()-0.5)*0.5,
+               (Math.random()-0.5)*2
+            );
+            cow.add(spot);
+          }
+      
+      }
 
      }
 
