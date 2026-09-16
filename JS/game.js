@@ -676,9 +676,143 @@ class Game {
             }
         }
 
-        async update(){
-            
+            async update(){
+            const currentTime= Date.now();
+            const deltaTime = (currentTime - this.lastUpdateTime) / 1000;
+            this.lastUpdateTime = currentTime;
+
+            //update and clean expired speed effects 
+            this.updateSpeedEffects(currentTime);
+
+            //calculate current speed based on active effects 
+            this.updateCurrentSpeed();
+
+            if (this.gameState==='playing'){
+                //update car physics and controls
+                this.car.update();
+
+                //update enviroment with current speed
+                this.enviroment.update(this.currentSpeed);
+                this.road.update(this.currentSpeed);
+
+                //update ai traffic with current speed 
+                this.aiTraffic.update(this.currentSpeed , deltaTime , this.car.distancce);
+
+                //update obstacles with current speed 
+                this.obstacles.update(this.currentSpeed, deltaTime , this.car.distance);
+
+                //check for collisions with ai vehicles
+                if(this.aiTraffic.checkCollisions(this.car.mesh.position.x, this.car.mesh.position.z)){
+                    await this.handleAICollision();
+                }
+
+                // check for collisions with obstacles
+                const collisions = this.obstacles.checkCollisions(
+                    this.car.mesh.position.x,
+                    this.car.mesh.position.z,
+                    this.currentSpeed
+                );
+
+                //handle all collisions
+                for(const collisions of collisions){
+                    await this.handleCollision(collision.obstacle);
+                }
+                this.checkStageProgression();
+                this.updateHUD();
+
+                //update engine based on speed 
+                if (this.currentSpeed>o ) {
+                    await this.soundManager.playEngineSound(this.currentSpeed);
+                }
+            }
         }
+        updateSoundEffects(currentTime){
+            //remove expired effects 
+            this.speedEffects = this.speedEffects.filter ( effect => effect.endTime > currentTime);
+        }
+        updateCurrentSpeed(){
+            if(this.speedEffects.length ===0){
+                 // no active effects , use base speed
+                 this.currentSpeed=this.baseSpeed;
+                 return;
+            }
+            //find the strongest speed reduction  
+            const lowestMultiplier = Math.min(...this.speedEffects.map(effect => effect.multiplier));
+            this.currentSpeed = this.baseSpeed * lowestMultiplier;
+        }
+
+        addSpeedEffect (effect){
+            //add new speed effect with timing information
+            this.speedEffects.push({
+                multiplier:effect.speedMultiplier,
+                endTime: Date.now() + effect.recoveryTime,
+                type:effect .damageType
+            }
+
+            );
+        }
+
+        addScreenShake(shake, duration){
+            /// implementation of add ScreenShake method
+        }
+        canPlaySound(){
+            return !this.lastCollisionSound || (Date.now() - this.lastCollisionSound > 300);
+
+        }
+        restartGame(){
+            //reset game state
+            this.gameState='start';
+
+            //reset car position and properties
+            this.car.mesh.position.set(0,0,0);
+            this.car.mesh.rotation.set(0,0,0);
+            this.car.speed = 0;
+            this.car.distance= 0;
+            this.car.currentX=0;
+            this.car.steerLeft= false;
+            this.car.steerRight = false;
+            this.car.brake= false;
+            this.car.accelerate = false;
+
+            //reset camera position
+            this.camera.position.set (0,3,-6);
+            this.camera.lookAt(0,0,10);
+
+            //reset AI traffic
+            this.aiTraffic.reset();
+
+            //reset obstacles if they exist
+            if (this.obstacles){
+                this.obstacles.reset();
+            }
+
+            //reset HUD
+                    document.getElementById('score').textContent = 'Score: 0';
+        document.getElementById('distance').textContent = 'Distance: 0m';
+        document.getElementById('points').textContent = 'Points: 0.00';
+        document.getElementById('speed').textContent = '0 km/h';
+        document.getElementById('stage').textContent = 'Stage 1: Nyarugenge';
+
+        // Show start screen
+        document.getElementById('hud').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+        
+        // Reset collision cooldown
+        this.isCollisionCooldown = false;
+
+        // Reset any active effects
+        const gameCanvas = document.getElementById('gameCanvas');
+        if (gameCanvas.animation) {
+            gameCanvas.animation.cancel();
+        }
+        
+        // Remove any existing flash effects
+        const existingFlashes = document.querySelectorAll('.collision-flash');
+        existingFlashes.forEach(flash => flash.remove());
+
+        // Reset the last update time
+        this.lastUpdateTime = performance.now();
+    }
 
 }
 
