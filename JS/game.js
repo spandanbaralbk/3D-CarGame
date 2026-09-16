@@ -553,3 +553,92 @@ class Game {
             document.body.removeChild(transition);
         }, this.currentStage === 4 ? 3000 : 2000);
     }
+     updateHUD(){
+        // update speed display
+        const speedKMH = Math.round(this.car.speed * 3.6);// conver m/s into km/h
+        document.getElementById('speed').textContent = `${speedKMH} km/h`;
+
+        //update  distance and score 
+        const distanceInMeters = Math.round(this.car.distance);
+        document.getElementById ('distance').textContent = `Distance : ${distanceInMeters}m`;
+
+        //calculate points based on distance 
+        const points = (distanceInMeters / this.metersPerPoint).toFixed(2);
+        document.getElementById('points').textContent=`points : ${points}`;
+        document.getElementById('score').textContent=`Score : ${Math.floor(points)}`;
+
+        //update lap progress 
+        const currentLapProgress = this.car.distance - this.lastLapDistance;
+        const lapProgressPercent = Math.min(100, (currentLapProgress / this.lapDistance)* 100).toFixed(1);
+        document.getElementById('Lap-counter').textContent=
+        `Lap : ${this.currentLap}/${this.maxLaps} (${lapProgressPercent}%)`;
+
+
+     }
+          animate(){
+            requestAnimationFrame(()=> this.animate());
+
+            //calculate delta time for smooth updates 
+
+            const currentTime = performance.now();
+            const deltaTime = (currentTime - this.lastUpdateTime) / 1000;
+            this.lastUpdateTime = currentTime ;
+
+            if (this.gameState === 'playing') {
+                //update car position and physics 
+                this.car.update();
+
+                //update game enviroment 
+                this.enviroment.update(this.car.speed);
+                this.road.update(this.car.speed);
+
+                //update ai traffic with player data
+                this.aiTraffic.update(this.car.speed , deltaTime , this.car.distance);
+
+                //update obstacles with proper timing
+                this.obstacles.update(this.car.speed, deltaTime , this.car.distance);
+
+                //check for collisons with ai vehicles
+                if (this.aiTraffic.checkCollisons(this.car.mesh.position.x , this.car.mesh.position.z)){
+                    this.handleAICollision();
+                }
+                //check for collisions with obstacles
+                const collisions = this.obstacles.checkCollisions(
+                    this.car.mesh.position.x,
+                    this.car.mesh.position.z,
+                    this.car.speed
+                );
+
+                //handle all collisions
+                collisions.forEach(collision => {
+                    this.handleCollision(collision.obstacle);
+                }
+
+                );
+
+                this.checkStageProgression();
+                this.updateHUD();
+
+            }
+            else if (this.gameState==='start') {
+                //preview mode updates
+                this.enviroment.update(this.previewSpeed);
+                this.road.update(this.previewSpeed);
+            }
+            //render the scene
+            this.renderer.render(this.scene , this.camera);
+          }
+                       
+}
+
+                    
+
+
+
+window.addEventListener('load', () => {
+
+    new Game();
+
+});
+
+
