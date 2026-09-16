@@ -626,168 +626,172 @@ class Game {
         this.renderer.render(this.scene, this.camera);
     }
 
-       startGameIfReady(){
-            if (this.gameState==='start'){
-                document.getElementById('start-screen').classList.add('hidden');
-                const countdownElement = document.getElementById('countdown');
-                const countdownText= countdownElement.querySelector('.countdown-text');
-
-                //reset car position 
-                this.car.mesh.position.x = 0;
-                this.car.mesh.rotation.y=0
-
-                //reset camera to gameplay position
-                this.camera.position.set(0 , 3 , -6);
-                this.camera.lookAt(0 ,0 , 10);
-
-                //show countdown 
-                countdownElement.classlist.remove('hidden');
-                this.gameState = 'countdown';
-
-                //start countdown sequence
-                let count = 3;
-                const self = this;
-                const countdown = async function (){
-                    if (count > 0){
-                        countdownText.textContent = count ;
-                        countdownText.style.animation = 'none';
-                        countdownText.offsetHeight;// trigger reflow
-                        countdownText.style.animation= 'pulseScale is ease-in-out';
-                        await self.soundManager.playSound('menu');
-                        count--;
-                        setTimeout(countdown , 1000);
-                    } else{
-                        //show GO!!
-                        countdownText.textContent='GO!';
-                        countdownText.style.animation = 'none';
-                        countdownText.offsetHeight; //trigger reflow
-                        countdownText.style.animation='pulseScale 0.5s ease-in-out';
-                        await self.soundManager.playSound('point')// use point sound for go!
-
-                        //hide countdown and start  game after GO!
-                        setTimeout(()=>{
-                            countdownElement.classlist.add('hidden');
-                            document.getElementById('hud').classlist.remove('hidden');
-                            self.gameState= 'playing';
-                        }, 1000);
-                    }
-                };
-                countdown();
-            }
-        }
-
-            async update(){
-            const currentTime= Date.now();
-            const deltaTime = (currentTime - this.lastUpdateTime) / 1000;
-            this.lastUpdateTime = currentTime;
-
-            //update and clean expired speed effects 
-            this.updateSpeedEffects(currentTime);
-
-            //calculate current speed based on active effects 
-            this.updateCurrentSpeed();
-
-            if (this.gameState==='playing'){
-                //update car physics and controls
-                this.car.update();
-
-                //update enviroment with current speed
-                this.enviroment.update(this.currentSpeed);
-                this.road.update(this.currentSpeed);
-
-                //update ai traffic with current speed 
-                this.aiTraffic.update(this.currentSpeed , deltaTime , this.car.distancce);
-
-                //update obstacles with current speed 
-                this.obstacles.update(this.currentSpeed, deltaTime , this.car.distance);
-
-                //check for collisions with ai vehicles
-                if(this.aiTraffic.checkCollisions(this.car.mesh.position.x, this.car.mesh.position.z)){
-                    await this.handleAICollision();
+    startGameIfReady() {
+        if (this.gameState === 'start') {
+            document.getElementById('start-screen').classList.add('hidden');
+            const countdownElement = document.getElementById('countdown');
+            const countdownText = countdownElement.querySelector('.countdown-text');
+            
+            // Reset car position
+            this.car.mesh.position.x = 0;
+            this.car.mesh.rotation.y = 0;
+            
+            // Reset camera to gameplay position
+            this.camera.position.set(0, 3, -6);
+            this.camera.lookAt(0, 0, 10);
+            
+            // Show countdown
+            countdownElement.classList.remove('hidden');
+            this.gameState = 'countdown';
+            
+            // Start countdown sequence
+            let count = 3;
+            const self = this;
+            const countdown = async function() {
+                if (count > 0) {
+                    countdownText.textContent = count;
+                    countdownText.style.animation = 'none';
+                    countdownText.offsetHeight; // Trigger reflow
+                    countdownText.style.animation = 'pulseScale 1s ease-in-out';
+                    await self.soundManager.playSound('menu');
+                    count--;
+                    setTimeout(countdown, 1000);
+                } else {
+                    // Show GO!
+                    countdownText.textContent = 'GO!';
+                    countdownText.style.animation = 'none';
+                    countdownText.offsetHeight; // Trigger reflow
+                    countdownText.style.animation = 'pulseScale 0.5s ease-in-out';
+                    await self.soundManager.playSound('point'); // Use point sound for GO!
+                    
+                    // Hide countdown and start game after GO!
+                    setTimeout(() => {
+                        countdownElement.classList.add('hidden');
+                        document.getElementById('hud').classList.remove('hidden');
+                        self.gameState = 'playing';
+                    }, 1000);
                 }
-
-                // check for collisions with obstacles
-                const collisions = this.obstacles.checkCollisions(
-                    this.car.mesh.position.x,
-                    this.car.mesh.position.z,
-                    this.currentSpeed
-                );
-
-                //handle all collisions
-                for(const collisions of collisions){
-                    await this.handleCollision(collision.obstacle);
-                }
-                this.checkStageProgression();
-                this.updateHUD();
-
-                //update engine based on speed 
-                if (this.currentSpeed>o ) {
-                    await this.soundManager.playEngineSound(this.currentSpeed);
-                }
-            }
+            };
+            
+            countdown();
         }
-        updateSoundEffects(currentTime){
-            //remove expired effects 
-            this.speedEffects = this.speedEffects.filter ( effect => effect.endTime > currentTime);
-        }
-        updateCurrentSpeed(){
-            if(this.speedEffects.length ===0){
-                 // no active effects , use base speed
-                 this.currentSpeed=this.baseSpeed;
-                 return;
-            }
-            //find the strongest speed reduction  
-            const lowestMultiplier = Math.min(...this.speedEffects.map(effect => effect.multiplier));
-            this.currentSpeed = this.baseSpeed * lowestMultiplier;
-        }
+    }
 
-        addSpeedEffect (effect){
-            //add new speed effect with timing information
-            this.speedEffects.push({
-                multiplier:effect.speedMultiplier,
-                endTime: Date.now() + effect.recoveryTime,
-                type:effect .damageType
+    async update() {
+        const currentTime = Date.now();
+        const deltaTime = (currentTime - this.lastUpdateTime) / 1000;
+        this.lastUpdateTime = currentTime;
+
+        // Update and clean expired speed effects
+        this.updateSpeedEffects(currentTime);
+        
+        // Calculate current speed based on active effects
+        this.updateCurrentSpeed();
+
+        if (this.gameState === 'playing') {
+            // Update car physics and controls
+            this.car.update();
+            
+            // Update environment with current speed
+            this.environment.update(this.currentSpeed);
+            this.road.update(this.currentSpeed);
+            
+            // Update AI traffic with current speed
+            this.aiTraffic.update(this.currentSpeed, deltaTime, this.car.distance);
+            
+            // Update obstacles with current speed
+            this.obstacles.update(this.currentSpeed, deltaTime, this.car.distance);
+            
+            // Check for collisions with AI vehicles
+            if (this.aiTraffic.checkCollisions(this.car.mesh.position.x, this.car.mesh.position.z)) {
+                await this.handleAICollision();
             }
 
+            // Check for collisions with obstacles
+            const collisions = this.obstacles.checkCollisions(
+                this.car.mesh.position.x,
+                this.car.mesh.position.z,
+                this.currentSpeed
             );
-        }
 
-        addScreenShake(shake, duration){
-            /// implementation of add ScreenShake method
-        }
-        canPlaySound(){
-            return !this.lastCollisionSound || (Date.now() - this.lastCollisionSound > 300);
-
-        }
-        restartGame(){
-            //reset game state
-            this.gameState='start';
-
-            //reset car position and properties
-            this.car.mesh.position.set(0,0,0);
-            this.car.mesh.rotation.set(0,0,0);
-            this.car.speed = 0;
-            this.car.distance= 0;
-            this.car.currentX=0;
-            this.car.steerLeft= false;
-            this.car.steerRight = false;
-            this.car.brake= false;
-            this.car.accelerate = false;
-
-            //reset camera position
-            this.camera.position.set (0,3,-6);
-            this.camera.lookAt(0,0,10);
-
-            //reset AI traffic
-            this.aiTraffic.reset();
-
-            //reset obstacles if they exist
-            if (this.obstacles){
-                this.obstacles.reset();
+            // Handle all collisions
+            for (const collision of collisions) {
+                await this.handleCollision(collision.obstacle);
             }
 
-            //reset HUD
-                    document.getElementById('score').textContent = 'Score: 0';
+            this.checkStageProgression();
+            this.updateHUD();
+
+            // Update engine sound based on speed
+            if (this.currentSpeed > 0) {
+                await this.soundManager.playEngineSound(this.currentSpeed);
+            }
+        }
+    }
+
+    updateSpeedEffects(currentTime) {
+        // Remove expired effects
+        this.speedEffects = this.speedEffects.filter(effect => effect.endTime > currentTime);
+    }
+
+    updateCurrentSpeed() {
+        if (this.speedEffects.length === 0) {
+            // No active effects, use base speed
+            this.currentSpeed = this.baseSpeed;
+            return;
+        }
+
+        // Find the strongest speed reduction
+        const lowestMultiplier = Math.min(...this.speedEffects.map(effect => effect.multiplier));
+        this.currentSpeed = this.baseSpeed * lowestMultiplier;
+    }
+
+    addSpeedEffect(effect) {
+        // Add new speed effect with timing information
+        this.speedEffects.push({
+            multiplier: effect.speedMultiplier,
+            endTime: Date.now() + effect.recoveryTime,
+            type: effect.damageType
+        });
+    }
+
+    addScreenShake(shake, duration) {
+        // Implementation of addScreenShake method
+    }
+
+    canPlaySound() {
+        return !this.lastCollisionSound || (Date.now() - this.lastCollisionSound > 300);
+    }
+
+    restartGame() {
+        // Reset game state
+        this.gameState = 'start';
+        
+        // Reset car position and properties
+        this.car.mesh.position.set(0, 0, 0);
+        this.car.mesh.rotation.set(0, 0, 0);
+        this.car.speed = 0;
+        this.car.distance = 0;
+        this.car.currentX = 0;
+        this.car.steerLeft = false;
+        this.car.steerRight = false;
+        this.car.brake = false;
+        this.car.accelerate = false;
+
+        // Reset camera position
+        this.camera.position.set(0, 3, -6);
+        this.camera.lookAt(0, 0, 10);
+
+        // Reset AI traffic
+        this.aiTraffic.reset();
+
+        // Reset obstacles if they exist
+        if (this.obstacles) {
+            this.obstacles.reset();
+        }
+
+        // Reset HUD
+        document.getElementById('score').textContent = 'Score: 0';
         document.getElementById('distance').textContent = 'Distance: 0m';
         document.getElementById('points').textContent = 'Points: 0.00';
         document.getElementById('speed').textContent = '0 km/h';
@@ -814,75 +818,76 @@ class Game {
         this.lastUpdateTime = performance.now();
     }
 
-      pauseGame(){
-                if (this.gameState==='playing'){
-                    this.gameState='paused';
-                    this.updateMenuState('pause');
-                    this.showMenu();
-                    if(this.radioPlaying){
-                        this.soundManager.stopMusic();
-                    }
-                }
+    pauseGame() {
+        if (this.gameState === 'playing') {
+            this.gameState = 'paused';
+            this.updateMenuState('pause');
+            this.showMenu();
+            if (this.radioPlaying) {
+                this.soundManager.stopMusic();
             }
-                                    resumeGame(){
-                                        if(this.gameState==='paused'){
-                                            this.gameState='playing';
-                                            this.hideMenu();
-                                            if(this.radioPlaying){
-                                                this.soundManager.playMusic();
-                                            }
-                                        }
-                                    }
+        }
+    }
 
-                                exitToMenu(){
-                                    this.gameState='start';
-                                    this.updateMenuState('main');
-                                    document.getElementById('start-screen').classList.remove('hidden');
-                                    document.getElementById('hud').classList.add('hidden');
-                                    this.hideMenu();
-                                    this.resetGame();
-                                }
-                                updateMenuState(state){
-                                    this.menuState = state;
-                                    const menu = document.getElementById('menu');
-                                    const title = menu.querySelector('.title');
+    resumeGame() {
+        if (this.gameState === 'paused') {
+            this.gameState = 'playing';
+            this.hideMenu();
+            if (this.radioPlaying) {
+                this.soundManager.playMusic();
+            }
+        }
+    }
 
-                                    //update title based on state 
-                                    title.textContent = state ==='main'? 'FutureSkillsDrive': 'Game pausedd';
+    exitToMenu() {
+        this.gameState = 'start';
+        this.updateMenuState('main');
+        document.getElementById('start-screen').classList.remove('hidden');
+        document.getElementById('hud').classList.add('hidden');
+        this.hideMenu();
+        this.resetGame();
+    }
 
-                                    //show/hide based on menu state
-                                    const buttons = menu.querySelectorAll('[data-menu-state]');
-                                    buttons.forEach(button => {
-                                        if(button.dataset.menuState===state){
-                                            button.classlist.remove ('hidden');
-                                        }else{
-                                            button.classList.add('hidden');
-                                        }
-                                    });
-                                }
-                                showMenu(){
-                                    document.getElementById('menu').classList.remove('hidden');
-                                    document.getElementById('settings-menu').classList.add('hidden');
-                                    document.getElementById('high-scores').classList.add('hidden');
+    updateMenuState(state) {
+        this.menuState = state;
+        const menu = document.getElementById('menu');
+        const title = menu.querySelector('.title');
+        
+        // Update title based on state
+        title.textContent = state === 'main' ? 'FutureSkillsDrive' : 'Game Paused';
+        
+        // Show/hide buttons based on menu state
+        const buttons = menu.querySelectorAll('[data-menu-state]');
+        buttons.forEach(button => {
+            if (button.dataset.menuState === state) {
+                button.classList.remove('hidden');
+            } else {
+                button.classList.add('hidden');
+            }
+        });
+    }
 
-                                }
-                                hideMenu(){
-                                    document.getElementById('menu').classList.add('hidden');
-                                }
-                                statGame(){
-                                    this.gameState= 'playing';
-                                    this.hideMenu();
-                                    document.getElementById('hud').classList.remove('hidden');
-                                    document.getElementById('start-screen').classList.add('hidden');
-                                    //reset game state if needed
-                                    this.resetGame();
-                                }
+    showMenu() {
+        document.getElementById('menu').classList.remove('hidden');
+        document.getElementById('settings-menu').classList.add('hidden');
+        document.getElementById('high-scores').classList.add('hidden');
+    }
+
+    hideMenu() {
+        document.getElementById('menu').classList.add('hidden');
+    }
+
+    startGame() {
+        this.gameState = 'playing';
+        this.hideMenu();
+        document.getElementById('hud').classList.remove('hidden');
+        document.getElementById('start-screen').classList.add('hidden');
+        // Reset game state if needed
+        this.resetGame();
+    }
 }
 
-
-
+// Initialize game when the window loads
 window.addEventListener('load', () => {
-
     new Game();
-
-});
+}); 
