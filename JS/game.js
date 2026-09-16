@@ -814,6 +814,69 @@ class Game {
         this.lastUpdateTime = performance.now();
     }
 
+      pauseGame(){
+                if (this.gameState==='playing'){
+                    this.gameState='paused';
+                    this.updateMenuState('pause');
+                    this.showMenu();
+                    if(this.radioPlaying){
+                        this.soundManager.stopMusic();
+                    }
+                }
+            }
+                                    resumeGame(){
+                                        if(this.gameState==='paused'){
+                                            this.gameState='playing';
+                                            this.hideMenu();
+                                            if(this.radioPlaying){
+                                                this.soundManager.playMusic();
+                                            }
+                                        }
+                                    }
+
+                                exitToMenu(){
+                                    this.gameState='start';
+                                    this.updateMenuState('main');
+                                    document.getElementById('start-screen').classList.remove('hidden');
+                                    document.getElementById('hud').classList.add('hidden');
+                                    this.hideMenu();
+                                    this.resetGame();
+                                }
+                                updateMenuState(state){
+                                    this.menuState = state;
+                                    const menu = document.getElementById('menu');
+                                    const title = menu.querySelector('.title');
+
+                                    //update title based on state 
+                                    title.textContent = state ==='main'? 'FutureSkillsDrive': 'Game pausedd';
+
+                                    //show/hide based on menu state
+                                    const buttons = menu.querySelectorAll('[data-menu-state]');
+                                    buttons.forEach(button => {
+                                        if(button.dataset.menuState===state){
+                                            button.classlist.remove ('hidden');
+                                        }else{
+                                            button.classList.add('hidden');
+                                        }
+                                    });
+                                }
+                                showMenu(){
+                                    document.getElementById('menu').classList.remove('hidden');
+                                    document.getElementById('settings-menu').classList.add('hidden');
+                                    document.getElementById('high-scores').classList.add('hidden');
+
+                                }
+                                hideMenu(){
+                                    document.getElementById('menu').classList.add('hidden');
+                                }
+                                statGame(){
+                                    this.gameState= 'playing';
+                                    this.hideMenu();
+                                    document.getElementById('hud').classList.remove('hidden');
+                                    document.getElementById('start-screen').classList.add('hidden');
+                                    //reset game state if needed
+                                    this.resetGame();
+                                }
 }
 
 
