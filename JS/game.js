@@ -625,6 +625,61 @@ class Game {
         // Render the scene
         this.renderer.render(this.scene, this.camera);
     }
+
+       startGameIfReady(){
+            if (this.gameState==='start'){
+                document.getElementById('start-screen').classList.add('hidden');
+                const countdownElement = document.getElementById('countdown');
+                const countdownText= countdownElement.querySelector('.countdown-text');
+
+                //reset car position 
+                this.car.mesh.position.x = 0;
+                this.car.mesh.rotation.y=0
+
+                //reset camera to gameplay position
+                this.camera.position.set(0 , 3 , -6);
+                this.camera.lookAt(0 ,0 , 10);
+
+                //show countdown 
+                countdownElement.classlist.remove('hidden');
+                this.gameState = 'countdown';
+
+                //start countdown sequence
+                let count = 3;
+                const self = this;
+                const countdown = async function (){
+                    if (count > 0){
+                        countdownText.textContent = count ;
+                        countdownText.style.animation = 'none';
+                        countdownText.offsetHeight;// trigger reflow
+                        countdownText.style.animation= 'pulseScale is ease-in-out';
+                        await self.soundManager.playSound('menu');
+                        count--;
+                        setTimeout(countdown , 1000);
+                    } else{
+                        //show GO!!
+                        countdownText.textContent='GO!';
+                        countdownText.style.animation = 'none';
+                        countdownText.offsetHeight; //trigger reflow
+                        countdownText.style.animation='pulseScale 0.5s ease-in-out';
+                        await self.soundManager.playSound('point')// use point sound for go!
+
+                        //hide countdown and start  game after GO!
+                        setTimeout(()=>{
+                            countdownElement.classlist.add('hidden');
+                            document.getElementById('hud').classlist.remove('hidden');
+                            self.gameState= 'playing';
+                        }, 1000);
+                    }
+                };
+                countdown();
+            }
+        }
+
+        async update(){
+            
+        }
+
 }
 
 
