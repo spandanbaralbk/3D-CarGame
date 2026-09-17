@@ -106,4 +106,37 @@ class Road{
                 this.roadLines.push(dash);
             }
           }
+     createZebraCrossing(zPosition){
+            const stripeWidth = 1 ; // made wider
+            const stripeLength =10; //made longer to cover full road width 
+            const numStripes=6; //fewer but larger stripes
+            const spacing = 1; // Increased spacing between stripes
+
+            const groupWidth = (stripeWidth + spacing )* numStripes ;
+            const startZ = zPosition - (groupWidth / 2 ); //center the crossing 
+
+            for(let i = 0 ; i<numStripes ; i++){
+                const stripeGeometry = new THREE.PlaneGeometry(stripeLength , stripeWidth);
+                const stripeMaterial = new THREE.MeshPhongMaterial({
+                    color : 0xFFFFFF,
+                    side : THREE.DoubleSide,
+                    emissive : 0x666666 , // lighter emissive color
+                });
+                const stripe = new THREE.MEsh(stripeGeometry , stripeMaterial);
+
+                //position and rotation 
+                stripe.rotation.x = -Math.PI/ 2 ;
+                stripe.rotation.y = Math.PI/2 ;
+                stripe.position.set(
+                    0, //centered on road 
+                    0.02 , // raised slightly higher above road 
+                    startZ +( i * (stripeWidth + spacing))
+                );
+               this.scene.add(stripe);
+               this.zebraCrossings.push(stripe);    
+            }
+          }
+          createSigns(){
+            
+          }
 }
