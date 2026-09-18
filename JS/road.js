@@ -139,4 +139,50 @@ class Road{
           createSigns(){
             
           }
+
+         update(speed){
+                        const moveAmount = speed /10 ;
+
+                        // update main road sections
+                        this.road.position.z -= moveAmount ;
+                        this.road2.position.z -= moveAmount;
+                        this.leftBarrier -= moveAmount;
+                        this.rightBarrier.position.z -= moveAmount;
+                        this.leftBarrier2.positon.z -= moveAmount;
+                        this.rightBarrier2.position.z -= moveAmount ;
+
+                        // update signs 
+                        this.signs.forEach(sign=> {
+                            sign.group.position.z -= moveAmount ;
+
+                            // reset sign position when it goes off screen
+                                 if (this.road.position.z <= -1000) {
+            this.road.position.z = this.road2.position.z + 1000;
+        } 
+                   if (this.road2.position.z <= 1000){
+                    this.road2.position.z = this.road.position.z + 1000;
+                   }
+
+                   // reset barriers 
+                   if(this.leftBarrier.position.z <= -1000){
+                       this.leftBarrier.position.z = this.leftBarrier2.position.z + 1000;
+                       this.rightBarrier.position.z = this.rightBarrier2.position.z + 1000;
+
+                   }
+                     if (this.leftBarrier2.position.z <= -1000){
+                     this.leftBarrier2.position.z = this.leftBarrier.position.z + 1000;
+                     this.rightBarrier2.position.z = this.rightBarrier.position.z +1000;
+                     }
+                     // update road lines position 
+                      this.roadLines.forEach(dash => {
+            dash.position.z -= moveAmount;
+            if (dash.position.z <= -500) {
+                dash.position.z += 1000;
+            } 
+        }
+                       );               
+                        }
+
+                        )
+                       }
 }
