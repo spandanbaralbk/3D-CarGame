@@ -302,8 +302,86 @@ class Enviroment{
             );
             cow.add(spot);
           }
-      
+           
+          //tail
+          const tailGeometry = new THREE.CylinderGeometry(0.1,0.05,1);
+          const tail = new THREE.Mesh(tailGeometry,bodyMaterial);
+            tail.position.set(0,2,-1.7);
+            tail.rotation.x = Math.PI/4;
+            cow.add(tail);
+
+            return cow;
       }
+
+          createDecorations(){
+            const treeMaterials = {
+                
+              lightGreen : new THREE.MeshStandardMaterial({
+                color:0x68c242,
+                roughness:0.8,
+                metalness:0.1
+              }),
+              mediumGreen: new THREE.MeshStandardMaterial({
+                color: 0x2d5a27,
+                roughness:0.8,
+                metalness:0.1
+              }),
+              darkGreen: new THREE.MeshStandardMaterial({
+                color:0x1a3409,
+                roughness:0.8,
+                metalness:0.1
+              }),
+              trunk: new THREE.MeshStandardMaterial({
+                color: 0x3b2616,
+                roughness: 0.9,
+                metalness: 0.0
+              }),
+              bark: new THREE.MeshStandardMaterial({
+                color:0x4a3728,
+                roughness:1.0,
+                metalness: 0.0
+              })
+  };
+           function createLeafGroup(size,density){
+            const group = new THREE.Group();
+            const baseGeometry = new THREE.IsosahedronGeometry(size,1);
+
+            //create multiple overlapping leaf sections
+            for( let i=0;i<density*5;i++){
+              const leaf = new THREE.Mesh(
+                baseGeometry,
+                [treeMaterials.lightGreen,treeMaterials.mediumGreen,treeMaterials.darkGreen][Math.floor(Math.random()*3)]
+              );
+
+               //random positioning within the group
+               leaf.position.x = (Math.random()-0.5)* size;
+               leaf.position.y = (Math.random()-0.5)*size*0.5;
+               leaf.position.z = (Math.random()-0.5)* size;
+
+               const scale = 0.5 + Math.random()*0.5;
+               leaf.scale.set(scale,scale,scale);
+
+               leaf.rotation.x = Math.random()*Math.PI;
+               leaf.rotation.y = Math.random()* Math.PI;
+               leaf.rotation.z = Math.random()* Math.PI;
+
+               group.add(leaf);
+            }
+            return group;
+             }
+
+
+Create detailed tree components and foliage
+
+
+
+
+          }
+
+
+
+
+
 
      }
 
