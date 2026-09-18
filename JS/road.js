@@ -137,7 +137,100 @@ class Road{
             }
           }
           createSigns(){
-            
+                 // billboard data with various colors 
+                   const billboardData = [
+                    {
+                        text : "Visit Rwanda",
+                        position : 200 ,
+                        side:1 ,
+                        color :0x2E8B57 // sea green
+                    },
+                    {
+                        text : "Rwanda's Innovation Hub\nCoffee Energy!",
+                        position:600 ,
+                        side : -1,
+                        color :0x4169E1 // royal blue
+                    }, 
+                    {
+                        text: "Refuel with Rwandan\nCoffee Energy!!",
+                        position : 600,
+                        side : 1,
+                        color: 0xFFD700 // Gold (unchanged for RP sign)
+
+                    }
+                ];
+
+                //Traffic sign data 
+                const trafficSigns = [
+                  {
+                    type : 'speed_limit',
+                    text : '60',
+                    position : 150,
+                    side : -1
+                  },
+                  {
+                    type : 'yield',
+                    position : 500 , 
+                    side : -1
+                  },
+                  {
+                    type : 'stop',
+                    position : 500,
+                    side : -1 
+                  },
+                  {
+                    type: 'speed_limit',
+                    text: '80',
+                    position : 700,
+                    side : 1
+                  }
+
+                ];
+
+                // create billboards
+                billboardData.forEach(data => {
+                    const billboardGroup = new THREE.Group();
+
+                    // create two support poles 
+                    const poleGeometry = new THREE.CylinderGeometry(0.2,0.2, 5,8);
+                    const poleMaterial = new THREE.MeshPhongMaterial({color : 0x8B9B7B}); //greenish gray for poles 
+
+                    const liftPole = new THREE.Mesh(poleGeometry , poleMaterial);
+                    const rightPole = new Three.Mesh(poleGeometry,poleMaterial);
+                     
+                    // create sign board 
+                    const boardWidth = data.text === "RP" ? 3:6 ;
+                    const boardHeight = data.text.includes("\n") ? 3:2; 
+                    const boardGeometry = new THREE.BoxGeometry(boardWidth , boardHeight , 0.3);
+                    const boardMaterial = new THREE.MeshPhongMaterial ({
+                    color: data.color,
+                    shininess:50
+                    });
+                    const board = new THREE.Mesh(boardGeometry , boardMaterial);
+
+                    //position board
+                    board.position.y = 5;
+                       
+                    //position support poles 
+                    const poleSpacing = boardWidth * 0.4 ;
+                    leftPole.position.set(-poleSpacing , 2.5 ,0);
+                    rightPole.position.set(poleSpacing , 2.5 ,0);
+
+                    //create metal frame 
+                    const frameThickness = 0.1 ;
+                    const frameDepth = 0.35 ;
+                    const frameGeometry= new THREE.BoxGeometry(boardWidth + frameThickness , boardHeight + frameThickness , frameDepth);
+                    const frameMaterial = new THREE.MeshPhongMaterial({
+                        color: 0x303030,
+                        shininess :80
+                    });
+
+                    const frame = new THREE.Mesh(frameGeometry , frameMaterial);
+                    frame.position.y= 5;
+                    frame.positon.z = -0.02;
+
+                    
+                });
           }
 
          update(speed){
