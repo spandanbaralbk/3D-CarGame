@@ -13,6 +13,7 @@ class Enviroment{
         this.createHills();
         this.createBuildings(); //add building creations 
         this.createDecorations(); 
+        this.createForestClusters();
         this.createMagicGarden();
     }
      
@@ -76,7 +77,7 @@ class Enviroment{
          for(let i=0;i<8;i++){ //more pieces per cloud
            const cloudPiece = new THREE.Mesh(cloudGeometry,cloudMaterial);
            cloudPiece.position.set(
-            MediaSourceHandle.random() * 10 -5,
+            Math.random() * 10 -5,
             Math.random() *4 -2,
             Math.random() * 10 - 5 
            );
@@ -121,7 +122,7 @@ class Enviroment{
 
              }
 
-             vertices[i+1]=(baseheight+detail)* heightMultiplier;
+             vertices[i+1]=(baseHeight+detail)* heightMultiplier;
 
              //flatten area near the road
              if(distanceFromRoad<10){
@@ -169,7 +170,7 @@ class Enviroment{
         //Add darker base ground underneath
 
         const groundGeometry = new THREE.PlaneGeometry(1000,1000);
-        const groundMaterial = new Three.MeshPhongMaterial({
+        const groundMaterial = new THREE.MeshPhongMaterial({
          color: 0x2f3b1c,
          shininess:5,
          flatShading:true
@@ -200,7 +201,7 @@ class Enviroment{
 
             //create distant hills with slightly darker grass
                 
-             const distantHillsMaterial = new THree.MeshPhongMaterial({
+             const distantHillsMaterial = new THREE.MeshPhongMaterial({
               color:0x1b4f2f,
               shininess:8,
               flatShading:true,
@@ -344,7 +345,7 @@ class Enviroment{
   };
            function createLeafGroup(size,density){
             const group = new THREE.Group();
-            const baseGeometry = new THREE.IsosahedronGeometry(size,1);
+            const baseGeometry = new THREE.IcosahedronGeometry(size,1);
 
             //create multiple overlapping leaf sections
             for( let i=0;i<density*5;i++){
@@ -409,7 +410,7 @@ class Enviroment{
                   topRadius = 0.2 * scale;
               
                    //add trunk
-                   TreeWalker.add(createTreeTrunk(trunkHeight,baseRadius, topRadius));
+                   tree.add(createTreeTrunk(trunkHeight,baseRadius, topRadius));
 
                  //add pine layers
                  for(let i=0;i<5;i++){
@@ -431,27 +432,78 @@ class Enviroment{
                   const crown = createLeafGroup(4*scale,1.5);
                   crown.position.y= trunkHeight + (2*scale);
                   tree.add(crown);
-              
-              
-              
-              
-              
-              
-              
+
+                  for(let i=0;i<3;i++){
+                    const subCrown = createLeafGroup(3 * scale,1.2);
+                    subCrown.position.y = trunkHeight + (1.5 * scale);
+                    subCrown.position.x = (Math.random()-0.5)*2*scale;
+                    subCrown.position.z = (Math.random()-0.5)*2*scale;
+                    tree.add(subCrown);
+                  }
+                  break;
+
+                  case 'birch':
+                    trunkHeight = 10 * scale;
+                    baseRadius = 0.3 * scale;
+                    topRadius = 0.15 * scale;
+
+                    tree.add(createTreeTrunk(trunkHeight,baseRadius,topRadius));
+
+                    const birchCrown = createLeafGroup(2.5*scale,1);
+                    birchCrown.position.y = trunkHeight *0.8;
+                    birchCrown.scale.y = 2;
+                    tree.add(birchCrown);
+
+                    //add smaller surrounding crowns
+                    for(let i=0;i<4;i++){
+                      const subCrown = createLeafGroup(2*scale,8);
+                      subCrown.position.y = trunkHeight* (0.6 +Math.random()*0.3);
+                      subCrown.position.x = (Math.random()-0.5)*3*scale;
+                      subCrown.position.z = (Math.random()-0.5)*3*scale;
+                      tree.add(subCrown);
+                    }
+                    break;
                 }
             }
-
-                                    
-
-
+            return tree;
+          }
 
           }
 
+          createForestClusters() {
+            const forestClusters = [
+              { x: -40, z: 0, radius: 0 },
+              { x: 40, z: 200, radius: 25 },
+              { x: -35, z: 400, radius: 20 },
+              { x: 45, z: 600, radius: 35 },
+              { x: -45, z: 800, radius: 30 }
+            ];
 
+            forestClusters.forEach(cluster => {
+              const numTrees = Math.floor(cluster.radius * 0.8);
+              for (let i = 0; i < numTrees; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * cluster.radius;
+                const x = cluster.x + Math.cos(angle) * radius;
+                const z = cluster.z + Math.sin(angle) * radius;
 
+                const treeType = ['pine', 'oak', 'birch'][Math.floor(Math.random() * 3)];
+                const scale = 0.8 + Math.random() * 0.4;
+                const tree = createDetailedTree(treeType, scale);
 
+                tree.rotation.y = Math.random() * Math.PI * 2;
 
+                tree.position.set(
+                  x + (Math.random() - 0.5) * 2,
+                  0,
+                  z + (Math.random() - 0.5) * 0.2
+                );
 
-     }
+                this.scene.add(tree);
+                this.decorations.push(tree);
+              }
+            });
+          }
+    }
 
 
