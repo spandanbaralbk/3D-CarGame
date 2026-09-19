@@ -59,11 +59,91 @@ class SoundManager{
             });
         }
     }
-    
+
+    async playSound(soundName){
+        if(this.sounds[soundname]){
+            const params = [...this.sounds[soundname]];
+            params[0]*=this.sfxVolume;
+            try{
+                await zzfx(...params);
+            }catch(error){
+                console.error(`Failed to play sound ${soundname}:`,error);
+
+            }
+        }
+    }
+       async playMusic(){
+        if(!this.isPlaying){
+            try{
+                const audioContext = getAudioContext();
+                if (!audioContext) return;
+
+                //ensure context is running 
+                if (audioContext.state ==='suspend'){
+                    await audioContext.resume();
+                }
+                 //generate the music
+                 const musicData = zzfxm(...Object.values(this.backgroundMusic));
+
+                 //create audio buffer
+                 const buffer = audioContext.createBuffer(2,musicData[0].length,44100);
+
+                 //set the audio data for both channels
+                 buffer.getChannelData(0).set(musicData[0]);
+                 buffer.getChannelData(1).set(musicData[1]);
+
+                 //create and configure source node
+
+                 const source = audioContext.createBufferSource();
+                 const gainNode = audioContext.createGain();
+
+                 source.buffer = buffer;
+                 source.loop = true;
+
+                 //connects nodes
+                 source.connect(gainNode);
+                 gainNode.connect(audioContext.destination);
+
+                 //set volume
+                 gainNode.gain.value = this.musicVolume;
+
+                 //start playback
+                 source.start();
+                 this.currentMusic = gainNode;
+                 this.isPlaying= true;
+            } catch(error){
+                console.error('failed to play music:',error);
+
+            }
+        }
+       }
+
+       stopMusic(){
+        if(this.isPlaying && this.currentMusic){
+            this.currentMusic.disconnect();
+            this.currentMusic = null;
+            this.isPlaying = false;
+        }
+       }
+
+       toggleMusic(){
+        if(this.isPlaying){
+            this.stopMusic();
+        } else {
+            this.playMusic();
+        }
+       }
+
+       //engine sound with pitch based on speed
+
+       async playEngineSound(speed){
+        
+       }
+
+
     
 
     playSound(){}
-    playMusic(){}
     stopMusic(){}
     playCrashSound(){}
     playEngineSound(){}
