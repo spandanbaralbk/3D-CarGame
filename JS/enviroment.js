@@ -1,4 +1,4 @@
-            class Enviroment{
+            class Environment{
     constructor(scene){
         this.scene=scene;
         this.clouds=[];
