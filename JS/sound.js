@@ -137,14 +137,25 @@ class SoundManager{
        //engine sound with pitch based on speed
 
        async playEngineSound(speed){
-        
+        const engineParams = [...this.sounds.engine];
+        engineParams[2]= 440 +(speed*2);
+        engineParams[0]*= this.sfxVolume;
+        try{
+            await zzfx(...engineParams);
+        } catch (error){
+            console.error('Failed to play engine sound:',error);
+        }
        }
 
-
-    
-
-    playSound(){}
-    stopMusic(){}
-    playCrashSound(){}
-    playEngineSound(){}
+       //crash sound
+       async playCrashSound(intensity){
+        const crashParams = [...this.sounds.crash];
+        crashParams[0] = Math.min(2,intensity*2);
+        crashParams[0] *= this.sfxVolume;
+        try{
+            await zzfx(...crashParams);
+        }catch(error){
+            console.error('failed to play crash sound:',error);
+        }
+       }
 }
