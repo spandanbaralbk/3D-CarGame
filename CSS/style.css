@@ -222,7 +222,7 @@ transform: skewX(-20deg);
       }
      }
 
-     hidden{
+     .hidden{
       display: none !important;
      }
      .title{

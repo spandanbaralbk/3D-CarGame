@@ -16,7 +16,9 @@
         this.createForestClusters();
         this.createMagicGarden();
     }
-
+    //for before the review
+   update(){}
+   updateStage(){}
 
     createBuildings(){
        
