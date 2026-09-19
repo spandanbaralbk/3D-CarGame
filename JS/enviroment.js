@@ -1,24 +1,33 @@
-class Enviroment{
+            class Enviroment{
     constructor(scene){
         this.scene=scene;
         this.clouds=[];
         this.hills=[];
         this.decorations=[];
-        this.buildings=[];  //array to store building objects
+        this.buildings=[]; 
         this.magicGardenElements=[];
         this.currentStage=1;
-        this.skyMaterial=null; //store sky material reference
+        this.skyMaterial=null;
 
         this.createSky();
         this.createHills();
-        this.createBuildings(); //add building creations 
+        this.createBuildings(); 
         this.createDecorations(); 
         this.createForestClusters();
         this.createMagicGarden();
     }
+
+
+    createBuildings(){
+       
+    }
+
+    createMagicGarden(){
+        
+    }
      
     createSky(){
-        //create a large sphere for the sky
+       
         const skyGeometry = new THREE.SphereGeometry(500,32,32);
         this.skyMaterial = new THREE.ShaderMaterial({
              uniforms:{
@@ -30,7 +39,7 @@ class Enviroment{
              vertexShader: `
     varying vec3 vWorldPosition;
              void main(){
-                vec4 worldPosition=modelMatrix * vec4(Position,1.0);
+                vec4 worldPosition=modelMatrix * vec4(position,1.0);
                 vWorldPosition = worldPosition.xyz;
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
              }
@@ -46,17 +55,17 @@ class Enviroment{
             gl_FragColor = vec4(mix(bottomColor,topColor,max(pow(max(h,0.0),exponent),0.0)),1.0);
             }
             `,
-            side: THREE.Backside
+            side: THREE.BackSide
 
         });
         const sky = new THREE.Mesh(skyGeometry,this.skyMaterial);
         this.scene.add(sky);
 
-        //create more visible clouds at higher altitude
-        for(let i=0;i<25;i++){ //increased number of clouds
+        //create more visible clouds 
+        for(let i=0;i<25;i++){ //increase number of clouds
           this.createCloud(
             Math.random() * 300-150,
-            Math.random() * 30+130,  //height between 130-160
+            Math.random() * 30+130,  
             Math.random() *800-400
           );
         }
@@ -72,7 +81,7 @@ class Enviroment{
      
          const cloudGroup = new THREE.Group();
 
-         //create denser cloud formations
+         //create denser clouds
 
          for(let i=0;i<8;i++){ //more pieces per cloud
            const cloudPiece = new THREE.Mesh(cloudGeometry,cloudMaterial);
@@ -95,6 +104,40 @@ class Enviroment{
           this.scene.add(cloudGroup);
           this.clouds.push(cloudGroup);
     }
+
+    
+     terrainFormula(x,z){
+        const baseHeight=
+        Math.sin(x * 0.02)* 12 + Math.sin(z*0.02)*10 + Math.sin(x*0.05+z*0.05)*8;
+
+        //add smaller grasses
+        const detail =
+        Math.sin(x*0.1)*2*Math.sin(z*0.1)+ //small bumps
+        Math.cos(x*0.08-z*0.08)*3;  //medium
+
+        const distanceFromRoad =Math.abs(x);
+        let heightMultiplier=1.0;
+
+        if(distanceFromRoad>30){
+           heightMultiplier = 1.0 +(distanceFromRoad - 30)*0.03;
+        }
+
+        let h=(baseHeight+detail)* heightMultiplier;
+
+     
+        if(distanceFromRoad<10){
+           h*=(distanceFromRoad-5)/5;
+           if(distanceFromRoad<5) h=0;
+        }
+        return h;
+     }
+
+  
+     getHeightAt(x,z){
+        const i = Math.min(2,Math.max(0,Math.floor((z+1000)/1000))); 
+        const centerZ = i*1000 - 500;
+        return -2 - (i*0.2) + this.terrainFormula(x, z - centerZ);
+     }
      
      createHills(){
         const hillGeometry = new THREE.PlaneGeometry(1000,1000,150,150);
@@ -103,37 +146,15 @@ class Enviroment{
         //create rolling hills
         for(let i=0;i<vertices.length;i+=3){
             const x=vertices[i]; 
-            const z = vertices[i+2];
-         
-            const baseHeight=
-            Math.sin(x * 0.02)* 12 + Math.sin(z*0.02)*10 + Math.sin(x*0.05+z*0.05)*8;
+            const z = -vertices[i+1]; 
 
-             //add smaller grass mound details
-
-             const detail =
-             Math.sin(x*0.1)*2*Math.sin(z*0.1)+ //small bumps
-             Math.cos(x*0.08-z*0.08)*3;  //medium
-
-             const distanceFromRoad =Math.abs(x);
-             let heightMultiplier=1.0;
-
-             if(distanceFromRoad>30){
-                heightMultiplier = 1.0 +(distanceFromRoad - 30)*0.03;
-
-             }
-
-             vertices[i+1]=(baseHeight+detail)* heightMultiplier;
-
-             //flatten area near the road
-             if(distanceFromRoad<10){
-                vertices[i+1]*=(distanceFromRoad-5)/5;
-                if(distanceFromRoad<5) vertices[i+1]=0;
-             }
+          
+            vertices[i+2]=this.terrainFormula(x,z);
         }
 
         hillGeometry.computeVertexNormals();  
 
-        //create grass materials with different shades
+    
 
         const grassMaterials=[
            new THREE.MeshPhongMaterial({
@@ -149,25 +170,25 @@ class Enviroment{
            new THREE.MeshPhongMaterial({
             color:0x33691e,
             shininess:8,
-            flatShading:true
+            flatShading: true
            })
         ];    
 
 
-        //create grass sections
+   
             
         for(let i=0;i<3;i++){
             const grassland = new THREE.Mesh(hillGeometry,grassMaterials[i%3]);
             grassland.rotation.x = -Math.PI / 2;
             grassland.position.z = i*1000 - 500;
             grassland.position.y = -2 - (i*0.2);
-            grassland.position.z = (Math.random()-0.5)*0.1;
+           
 
             this.scene.add(grassland);
             this.hills.push(grassland);
         }
 
-        //Add darker base ground underneath
+      
 
         const groundGeometry = new THREE.PlaneGeometry(1000,1000);
         const groundMaterial = new THREE.MeshPhongMaterial({
@@ -178,10 +199,10 @@ class Enviroment{
 
         const darkGround = new THREE.Mesh(groundGeometry,groundMaterial);
            darkGround.rotation.x = -Math.PI /2;
-           darkGround.position.y = -2.1;  //slightly below grass
+           darkGround.position.y = -2.1; 
            this.scene.add(darkGround);
 
-           // Create distant hills with grass
+          
 
            const distantHillsGeometry = new THREE.PlaneGeometry(2000,1000,50,50);
            const hillVertices = distantHillsGeometry.attributes.position.array;
@@ -189,17 +210,17 @@ class Enviroment{
              for(let i=0;i<hillVertices.length;i+=3){
 
               const x =hillVertices[i];
-              const z =hillVertices[i+2];  
+              const z =-hillVertices[i+1];  
 
-              //Create larger , smoother hills 
-              hillVertices[i+1]=
+             
+              hillVertices[i+2]= 
               Math.sin(x*0.01)*30+
               Math.sin(z*0.01)*25+
               Math.sin(x*0.02+z*0.02)* 20;
              }    
             distantHillsGeometry.computeVertexNormals(); 
 
-            //create distant hills with slightly darker grass
+            //create distant hills 
                 
              const distantHillsMaterial = new THREE.MeshPhongMaterial({
               color:0x1b4f2f,
@@ -216,7 +237,7 @@ class Enviroment{
              this.scene.add(distantHills);
              this.hills.push(distantHills);
 
-             //Add grass detail patches
+             //Add grass details
              const grassPatchGeometry = new THREE.PlaneGeometry(2,2);
              const grassPatchMaterial = new THREE.MeshPhongMaterial({
                color:0x8bc34a,
@@ -235,7 +256,7 @@ class Enviroment{
                //skip patches too close to the road
                if(Math.abs(x)<8) continue;
 
-               patch.position.set(x,0.1,z);
+               patch.position.set(x,this.getHeightAt(x,z)+0.1,z); //FIX: follow terrain height instead of fixed 0.1
                patch.rotation.x=-Math.PI/2;
                patch.rotation.z= Math.random() * Math.PI;
                patch.scale.set(
@@ -297,7 +318,7 @@ class Enviroment{
             const spot = new THREE.Mesh(spotGeometry,spotMaterial);
             spot.rotation.y = Math.PI/2;
             spot.position.set(
-               (Math.random()-0.5)*1.5,
+               (Math.random()>0.5?1:-1)*1.01, 
                1.5 + (Math.random()-0.5)*0.5,
                (Math.random()-0.5)*2
             );
@@ -342,19 +363,20 @@ class Enviroment{
                 roughness:1.0,
                 metalness: 0.0
               })
-  };
+            };
+
            function createLeafGroup(size,density){
             const group = new THREE.Group();
             const baseGeometry = new THREE.IcosahedronGeometry(size,1);
 
-            //create multiple overlapping leaf sections
+           
             for( let i=0;i<density*5;i++){
               const leaf = new THREE.Mesh(
                 baseGeometry,
                 [treeMaterials.lightGreen,treeMaterials.mediumGreen,treeMaterials.darkGreen][Math.floor(Math.random()*3)]
               );
 
-               //random positioning within the group
+        
                leaf.position.x = (Math.random()-0.5)* size;
                leaf.position.y = (Math.random()-0.5)*size*0.5;
                leaf.position.z = (Math.random()-0.5)* size;
@@ -383,7 +405,7 @@ class Enviroment{
                trunk.position.y = height/2;
                trunkGroup.add(trunk);
 
-               //add bark detail and irregularities
+               
                for(let i=0;i<8;i++){
                 const barkPiece = new THREE.Mesh(
                   new THREE.BoxGeometry(0.2,height*0.3,0.1),
@@ -409,10 +431,10 @@ class Enviroment{
                   baseRadius = 0.4 *scale;
                   topRadius = 0.2 * scale;
               
-                   //add trunk
+                 
                    tree.add(createTreeTrunk(trunkHeight,baseRadius, topRadius));
 
-                 //add pine layers
+                
                  for(let i=0;i<5;i++){
                   const layer = createLeafGroup (3* scale*(1-i*0.15),1.2);
                   layer.position.y = trunkHeight * (0.5 +i*0.15);
@@ -454,9 +476,9 @@ class Enviroment{
                     birchCrown.scale.y = 2;
                     tree.add(birchCrown);
 
-                    //add smaller surrounding crowns
+                  
                     for(let i=0;i<4;i++){
-                      const subCrown = createLeafGroup(2*scale,8);
+                      const subCrown = createLeafGroup(2*scale,0.8);
                       subCrown.position.y = trunkHeight* (0.6 +Math.random()*0.3);
                       subCrown.position.x = (Math.random()-0.5)*3*scale;
                       subCrown.position.z = (Math.random()-0.5)*3*scale;
@@ -464,15 +486,16 @@ class Enviroment{
                     }
                     break;
                 }
+                return tree; 
             }
-            return tree;
-          }
 
+          
+            this.createDetailedTree = createDetailedTree;
           }
 
           createForestClusters() {
             const forestClusters = [
-              { x: -40, z: 0, radius: 0 },
+              { x: -40, z: 0, radius: 20 }, 
               { x: 40, z: 200, radius: 25 },
               { x: -35, z: 400, radius: 20 },
               { x: 45, z: 600, radius: 35 },
@@ -489,21 +512,61 @@ class Enviroment{
 
                 const treeType = ['pine', 'oak', 'birch'][Math.floor(Math.random() * 3)];
                 const scale = 0.8 + Math.random() * 0.4;
-                const tree = createDetailedTree(treeType, scale);
+                const tree = this.createDetailedTree(treeType, scale);
 
                 tree.rotation.y = Math.random() * Math.PI * 2;
 
+                const tx = x + (Math.random() - 0.5) * 2;
+                const tz = z + (Math.random() - 0.5) * 0.2;
                 tree.position.set(
-                  x + (Math.random() - 0.5) * 2,
-                  0,
-                  z + (Math.random() - 0.5) * 0.2
+                  tx,
+                  this.getHeightAt(tx, tz), //FIX: sit on the terrain instead of y = 0
+                  tz
                 );
 
                 this.scene.add(tree);
                 this.decorations.push(tree);
               }
             });
-          }
-    }
 
+            for(let i=0;i<30;i++){
+              const side= Math.random()>0.5?1:-1;
+              const x = side * (Math.random()*15+25);
+              const z = Math.random()*1000-500;
 
+              const treeType = ['pine','oak','birch'][Math.floor(Math.random()*3)];
+              const scale = 0.8 +Math.random()*0.4;
+              const tree = this.createDetailedTree(treeType,scale); //FIX: was "Tree" but used as "tree"
+
+              tree.rotation.y=Math.random()*Math.PI*2;
+              tree.position.set(x,this.getHeightAt(x,z),z);
+
+              this.scene.add(tree);
+              this.decorations.push(tree);
+            }
+            const additionalCusters=[
+              {x: -50,z: 300,radius: 15},
+              {x:60, z:500,radius:20},
+              {x:-40,z:700,radius:25}
+            ];
+            additionalCusters.forEach(cluster =>{
+              const numTrees = Math.floor(cluster.radius*0.7);
+              for (let i=0;i<numTrees;i++){
+                const angle = Math.random()*Math.PI*2;
+                const radius = Math.random()*cluster.radius;
+                const x = cluster.x +Math.cos(angle)*radius;
+                const z = cluster.z +Math.sin(angle)*radius;
+
+                const treeType = ['pine','oak','birch'][Math.floor(Math.random()*3)];
+                const scale = 0.6 + Math.random()*0.4;
+                const tree= this.createDetailedTree(treeType,scale);
+
+                tree.rotation.y = Math.random()* Math.PI*2;
+                tree.position.set(x,this.getHeightAt(x,z),z);
+
+                this.scene.add(tree);
+                this.decorations.push(tree);
+              }
+            });
+          } 
+} 
