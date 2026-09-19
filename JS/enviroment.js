@@ -370,7 +370,76 @@ class Enviroment{
             return group;
              }
 
+            function createTreeTrunk(height,baseRadius,topRadius){
+              const trunkGroup = new THREE.Group();
 
+              //main trunk
+              const trunk = new THREE.Mesh(
+                new THREE.CylinderGeometry(topRadius,baseRadius,height,8),
+                treeMaterials.trunk
+              );
+
+               trunk.position.y = height/2;
+               trunkGroup.add(trunk);
+
+               //add bark detail and irregularities
+               for(let i=0;i<8;i++){
+                const barkPiece = new THREE.Mesh(
+                  new THREE.BoxGeometry(0.2,height*0.3,0.1),
+                  treeMaterials.bark
+                );
+                barkPiece.position.y = height * (0.3 +Math.random()*0.4);
+                barkPiece.rotation.y= (Math.PI * 2 / 8)*i;
+                barkPiece.position.x = Math.sin(barkPiece.rotation.y)*(baseRadius*0.9);
+                barkPiece.position.z = Math.cos(barkPiece.rotation.y)*(baseRadius*0.9);
+                trunkGroup.add(barkPiece);
+               }
+
+               return trunkGroup;
+            }
+
+            function createDetailedTree(type,scale=1){
+              const tree = new THREE.Group();
+              let trunkHeight, baseRadius, topRadius;
+
+              switch(type){
+                case 'pine':
+                  trunkHeight = 8 * scale;
+                  baseRadius = 0.4 *scale;
+                  topRadius = 0.2 * scale;
+              
+                   //add trunk
+                   TreeWalker.add(createTreeTrunk(trunkHeight,baseRadius, topRadius));
+
+                 //add pine layers
+                 for(let i=0;i<5;i++){
+                  const layer = createLeafGroup (3* scale*(1-i*0.15),1.2);
+                  layer.position.y = trunkHeight * (0.5 +i*0.15);
+                  layer.scale.y = 1.5;
+                  tree.add(layer);
+                 }
+                 break;
+
+                 case 'oak':
+                  trunkHeight = 6 * scale;
+                  baseRadius = 0.5 * scale;
+                  topRadius = 0.3 * scale;
+
+                  //add trunk
+                  tree.add(createTreeTrunk(trunkHeight,baseRadius,topRadius));
+
+                  const crown = createLeafGroup(4*scale,1.5);
+                  crown.position.y= trunkHeight + (2*scale);
+                  tree.add(crown);
+              
+              
+              
+              
+              
+              
+              
+                }
+            }
 
                                     
 
