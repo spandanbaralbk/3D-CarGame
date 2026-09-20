@@ -15,7 +15,7 @@ class SoundManager{
          };
 
          //background music definition using ZzFXM
-         this.bachgroundMusic = {
+         this.backgroundMusic = {
             instruments:[
                 [2,0,100,.05,.4,.3,2,0,0],
                 [1.5,0,220,.05,.03,.15,0,.5,0],
@@ -40,7 +40,7 @@ class SoundManager{
     }
        
     initVolumeControls(){
-        const musicSlicer = document.getElementById('musicVolume');
+        const musicSlider = document.getElementById('musicVolume');
         const sfxSlider = document.getElementById('sfxVolume');
 
         if(musicSlider){
@@ -61,13 +61,13 @@ class SoundManager{
     }
 
     async playSound(soundName){
-        if(this.sounds[soundname]){
-            const params = [...this.sounds[soundname]];
+        if(this.sounds[soundName]){
+            const params = [...this.sounds[soundName]];
             params[0]*=this.sfxVolume;
             try{
                 await zzfx(...params);
             }catch(error){
-                console.error(`Failed to play sound ${soundname}:`,error);
+                console.error(`Failed to play sound ${soundName}:`,error);
 
             }
         }
