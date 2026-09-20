@@ -670,7 +670,7 @@ class Car3D {
                 break;
             }
         }
-     
+        
         // Apply final velocity
         this.mesh.position.x += this.velocity.x * 0.016;
         this.mesh.position.z += this.speed * 0.016;

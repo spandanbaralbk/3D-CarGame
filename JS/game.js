@@ -136,15 +136,16 @@ class Game {
             this.car.mesh.rotation.y = 0;
         });
 
-   document.getElementById('musicVolume')?.addEventListener('input', (e) => {
-    const volume = e.target.value / 100;
-    // Implement music volume control
-});
+        // Volume controls
+        document.getElementById('musicVolume').addEventListener('input', (e) => {
+            const volume = e.target.value / 100;
+            // Implement music volume control
+        });
 
-document.getElementById('sfxVolume')?.addEventListener('input', (e) => {
-    const volume = e.target.value / 100;
-    // Implement sound effects volume control
-});
+        document.getElementById('sfxVolume').addEventListener('input', (e) => {
+            const volume = e.target.value / 100;
+            // Implement sound effects volume control
+        });
     }
 
     handleKeyDown(e) {

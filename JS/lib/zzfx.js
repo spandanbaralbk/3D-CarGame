@@ -1,4 +1,3 @@
-//lets dig in guys
 // ZzFX - Zuper Zmall Zound Zynth - Micro Edition
 // MIT License - Copyright 2019 Frank Force
 // https://github.com/KilledByAPixel/ZzFX
@@ -28,7 +27,7 @@ const zzfx = async (...z) => {
     const audioContext = getAudioContext();
     if (!audioContext) return null;
     
-    // Ensure context is running  
+    // Ensure context is running
     if (audioContext.state === 'suspended') {
         try {
             await audioContext.resume();
@@ -65,7 +64,7 @@ const zzfxP = (...samples) => {
     }
 };
 
-// Generate samples  
+// Generate samples
 const zzfxG = (
     // parameters
     volume = 1, randomness = .05, frequency = 220, attack = 0, sustain = 0,
@@ -74,7 +73,7 @@ const zzfxG = (
     bitCrush = 0, delay = 0, sustainVolume = 1, decay = 0, tremolo = 0
 ) => {
     // init parameters
-    let PI2 = Math.PI*2,  
+    let PI2 = Math.PI*2,
     sign = v => v>0?1:-1,
     startSlide = slide *= 500 * PI2 / 44100 / 44100,
     startFrequency = frequency *= (1 + randomness*2*Math.random() - randomness) * PI2 / 44100,
@@ -88,7 +87,7 @@ const zzfxG = (
     delay *= 44100;
     
     length = attack + decay + sustain + release + delay | 0;
-      
+    
     try {
         // generate waveform
         for(; i < length; b[i++] = s) {
@@ -103,7 +102,7 @@ const zzfxG = (
                 
                 // apply modulation
                 if (modulation) frequency *= 1 + Math.sin(tm * modulation) * .5;
-                  
+                
                 f = frequency;                       // current frequency
                 
                 // apply vibrato
@@ -114,7 +113,7 @@ const zzfxG = (
                 
                 // bitcrush
                 if (bitCrush) t = t*bitCrush & 1/bitCrush;
-                  
+                
                 // calculate sample
                 s = t & 1;                          // square wave
                 s *= shape || 1;                    // apply shape
@@ -123,7 +122,7 @@ const zzfxG = (
                 
                 // calculate envelope
                 j && (s *= j);
-                  
+                
                 // apply envelope
                 if (c < attack)                     // attack
                     j = c/attack;
@@ -133,18 +132,17 @@ const zzfxG = (
                     j = sustainVolume;              
                 else if (c < length - delay)        // release
                     j = sustainVolume * (1 - ((c - attack - decay - sustain) / release));
-                else                                  // post release
+                else                                // post release
                     j = 0;
                 
                 // apply noise
                 if (noise) s *= 2*Math.random()-1;
             }
-        }  
+        }
         
         return b;
     } catch (error) {
         console.error('Failed to generate audio:', error);
-        return []; 
-    } 
-};  
-//completed yall
+        return [];
+    }
+}; 
