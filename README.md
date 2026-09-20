@@ -12,7 +12,8 @@
 1) clone the repo
 2) open the game:-
     Open index.html in your browser
-3)Play the game
+
+3) Play the game
 
 # Built with
 # JavaScript (Vanilla/Plain)
