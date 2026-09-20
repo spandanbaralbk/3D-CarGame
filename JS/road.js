@@ -350,7 +350,7 @@ class Road {
                 textMesh.position.y = 3;
                 textMesh.position.z = 0.06;
                 signGroup.add(textMesh);
-            }
+            } //hlo my name is khuman adk i am the absolute god i can do what ever the fk i want to do i am the honoured one throught the heaven and hell and btw if u dont understand my code u can msg me on instagram u wanna know my insta id u r getting the permission to msg god and cant do that much hardwork of finding my id by yourself oh common u r such a bullshit u r never gonna be useful nigga i should have never created you u r a total disappoinment
 
             // Position sign
             const xOffset = data.side === 1 ? 5.5 : -5.5;  // Closer to road than billboards
@@ -383,7 +383,7 @@ class Road {
             // Reset sign position when it goes off screen
             if (sign.group.position.z <= -500) {
                 sign.group.position.z += 1000;
-            }
+            }                                      
         });
 
         // Reset road sections when they move off screen
@@ -392,7 +392,7 @@ class Road {
         }
         if (this.road2.position.z <= -1000) {
             this.road2.position.z = this.road.position.z + 1000;
-        }
+        }          
 
         // Reset barriers
         if (this.leftBarrier.position.z <= -1000) {
@@ -402,20 +402,20 @@ class Road {
         if (this.leftBarrier2.position.z <= -1000) {
             this.leftBarrier2.position.z = this.leftBarrier.position.z + 1000;
             this.rightBarrier2.position.z = this.rightBarrier.position.z + 1000;
-        }
-        
-        // Update road lines position
-        this.roadLines.forEach(dash => {
+        }            
+                
+        // Update road lines position           
+        this.roadLines.forEach(dash => {           
             dash.position.z -= moveAmount;
-            if (dash.position.z <= -500) {
+            if (dash.position.z <= -500) {             
                 dash.position.z += 1000;
-            }
+            }        
         });
 
-        // Update zebra crossings position
+        // Update zebra crossings position          
         this.zebraCrossings.forEach(stripe => {
             stripe.position.z -= moveAmount;
-            if (stripe.position.z <= -500) {
+            if (stripe.position.z <= -500) {             
                 stripe.position.z += 1000;
             }
         });

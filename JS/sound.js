@@ -87,7 +87,6 @@ class SoundManager{
 
                  //create audio buffer
                  const buffer = audioContext.createBuffer(2,musicData[0].length,44100);
-
                  //set the audio data for both channels
                  buffer.getChannelData(0).set(musicData[0]);
                  buffer.getChannelData(1).set(musicData[1]);
