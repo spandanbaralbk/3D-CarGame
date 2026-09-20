@@ -16,9 +16,9 @@
 3) Play the game
 
 # Built with
-# JavaScript (Vanilla/Plain)
-# HTML5
-# CSS3
+ JavaScript (Vanilla/Plain)
+ HTML5
+CSS3
 
 # Demo Pictures
 <img width="1366" height="643" alt="image" src="https://github.com/user-attachments/assets/8627b4fc-3315-4000-849e-755897166838" />
