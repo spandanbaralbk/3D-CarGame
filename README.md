@@ -25,7 +25,7 @@ CSS3
 <img width="1365" height="639" alt="{60730731-BED4-4137-86A3-8864AE377621}" src="https://github.com/user-attachments/assets/53cdacf6-d412-4598-af01-8953be82b787" />
 
 ## Made by?
- It is a group project made by BALRAM AND KHUMAN.
+ It is a group project made by SPANDAN , BALRAM AND KHUMAN.
 
  ## inspiration
   - WE were inspired to make this from a web game that we used to play online.
