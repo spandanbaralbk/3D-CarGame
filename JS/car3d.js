@@ -1,6 +1,6 @@
-class car3D{
+class Car3D{
     constructor(){
-        this.mesh = new THRE.Group();
+        this.mesh = new THREE.Group();
 
         // add wheel references
         this.wheelFL = null ; // front left wheel
