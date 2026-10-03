@@ -1,4 +1,7 @@
 // ZzFXM (v2.0.3) - Zuper Zmall Zound Zynth Music Generator
+// MIT License - Copyright 2019 Frank Force
+// https://github.com/KilledByAPixel/ZzFX
+
 'use strict';
 
 const zzfxM = (instruments, patterns, sequence, BPM = 125) => {
