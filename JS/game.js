@@ -3,6 +3,8 @@ class Game {
         this.setupScene();
         this.setupEventListeners();
         this.gameState = 'start'; // start, playing, paused
+        this.hasCrashed = false; //prevents multiple triggers
+        this.crashThresholdSpeed = 80; 
         this.menuState = 'main'; // main, pause
         this.mouseControl = false;
         this.freeRideMode = false;
@@ -429,31 +431,50 @@ class Game {
     }
 
     handleAICollision() {
-        if (this.canPlaySound()) {
-            const intensity = Math.min(1, this.currentSpeed / 100);
-            this.soundManager.playCrashSound(intensity);
-        }
-
-        // Get collision details from AI traffic
-        const collisionDetails = this.aiTraffic.getCollisionDetails(
+         if(this.gameState !== 'playing')
+           return;
+        if(this.hasCrashed)
+            return;
+        
+        const details = this.aiTraffic.getCollisionDetails(
             this.car.mesh.position.x,
             this.car.mesh.position.z,
             this.car.speed
         );
+        const speedKMH = this.car.speed * 3.6;
 
-        if (collisionDetails.isOvertaking) {
-            // If we're overtaking (moving faster than the AI vehicle), just apply a small speed reduction
-            this.car.speed *= 0.3;
-        } else {
-            // If it's a real collision (not overtaking), reduce speed more significantly
+
+        if(details.isOvertaking){
             this.car.speed *= 0.5;
-            // Show major collision effect
+           
+            if(this.canPlaySound())
+                this.soundManager.playCrashSound(0.3);
             this.showCollisionEffect({
-                shake: 1.0,
-                duration: 1000,
-                sound: 'crash'
+                shake : 0.4, duration: 400
             });
+            return;
         }
+
+        //real collisions
+
+        if(speedKMH >= this.crashThresholdSpeed){
+          //crash = game overrr
+          this.hasCrashed = true;
+           this.car.speed *= 0.1;
+          this.showCollisionEffect({
+            shake : 1.5 , duration : 1100 });
+            if(this.canPlaySound())
+                this.soundManager.playCrashSound(1.0);
+                  this.triggerGameOver (details.vehicleType || 'vehicle') ;
+          }
+          else{
+            this.car.speed *= 0.4;
+            this.showCollisionEffect({
+                shake: 0.6, duration : 600
+            });
+            if (this.canPlaySound())
+                this.soundManager.playCrashSound(0.6);
+          }
     }
 
     checkStageProgression() {
@@ -512,6 +533,72 @@ class Game {
             }
         }
     }
+
+
+   triggerGameOver(collidedWith = 'vehicle'){
+
+    if(this.gameState === 'gameover')
+        return;
+    this.gameState = 'gameover';
+
+    this.car.accelerate = false;
+    this.car.speed = 0;
+    this.car.brake = false;
+
+    if(this.radioPlaying){
+        this.soundManager.stopMusic();
+    }
+      
+    //calcutale/compute(whatever) your score
+
+      const distanceInMeters = Math.round(this.car.distance);
+    const points = (distanceInMeters/ this.metersPerPoint).toFixed(2);
+    const score = Math.floor(points);
+
+     //high on score(jk)
+     this.highScores.push({
+        score, date: new Date().toISOString()
+     });
+    
+     this.highScores.push({
+         score, date : new Date().toISOString()
+     });
+     this.highScores.sort((a,b) => b.score - a.score);
+     this.highScores = this.highScores.slice(0,10);
+     localStorage.setItem('highScores',JSON.stringify(this.highScores));
+
+     //overlay
+     const overlay = document.createElement('div');
+      overlay.innerHTML = `
+      <div class="gameover-box">
+      <h1>Game Over>
+      <p>You Crashed into a ${collidedWith}!</p>
+      <div class="gameover-buttons">
+      <button id="retry-button">
+      Retry </button>
+      <button id="menu-button">
+      Main Menu</button>
+       </div>
+       </div>
+      `;
+      document.body.appendChild(overlay);
+
+      document.getElementById('retry-button').onclick = () =>{
+        overlay.remove();
+        this.hasCrashed = false;
+        this.startGameIfReady();
+        this.restartGame();
+      };
+
+      document.getElementById ('menu-button').onclick =() =>{
+        overlay.remove();
+        this.returnToTitle();
+        this.hasCrashed = false;
+        this.returnToTitle();
+      };
+           
+   }
+
 
     handleVictory() {
         this.gameState = 'victory';
@@ -576,6 +663,17 @@ class Game {
     }
 
     animate() {
+           
+        if(this.gameState === 'gameover' || this.gameState ==='victory' ){
+            this.renderer.render(this.scene,
+                this.camera
+            );
+            return;
+        }
+
+
+
+
         requestAnimationFrame(() => this.animate());
 
         // Calculate delta time for smooth updates
@@ -766,6 +864,11 @@ class Game {
     restartGame() {
         // Reset game state
         this.gameState = 'start';
+               
+        this.hasCrashed = false;
+
+
+        this.car.mesh.position.set(0,0,0);
         
         // Reset car position and properties
         this.car.mesh.position.set(0, 0, 0);
