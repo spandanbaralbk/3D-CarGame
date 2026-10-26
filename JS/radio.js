@@ -2,6 +2,8 @@ class Radio {
     constructor() {
         this.currentTrack = null;
         this.isPlaying = false;
+        this.currentSource = null;
+        this.currentGain = null;
         this.tracks = {
             1: {
                 name: "Cruising Beats",
@@ -73,7 +75,9 @@ class Radio {
                     case '1':
                     case '2':
                     case '3':
-                        this.playTrack(parseInt(e.key));
+                        this.playTrack(parseInt(e.key)).catch(error => {
+                            console.error('Failed to play radio track:', error);
+                        });
                         break;
                     case '0':
                         this.stopMusic();
@@ -90,7 +94,9 @@ class Radio {
                     if (track === 'off') {
                         this.stopMusic();
                     } else {
-                        this.playTrack(parseInt(track));
+                        this.playTrack(parseInt(track)).catch(error => {
+                            console.error('Failed to play radio track:', error);
+                        });
                     }
                 }
             });
@@ -102,26 +108,63 @@ class Radio {
         return window.game && window.game.gameState === 'playing';
     }
 
-    playTrack(trackNumber) {
+    async playTrack(trackNumber) {
         if (!this.tracks[trackNumber]) return;
 
         // Stop current track if playing
         this.stopMusic();
 
-        // Start new track
+        const audioContext = getAudioContext();
+        if (!audioContext) return;
+
+        if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+        }
+
+        const [instruments, notePatterns, bpm] = this.tracks[trackNumber].song;
+        const patterns = notePatterns.map((notes, patternIndex) => [
+            notes.flatMap((note, noteIndex) => note > 0
+                ? [noteIndex % instruments.length, 0.7, 48 + (noteIndex * 2) % 24]
+                : [0, 0, 0])
+        ]);
+        const sequence = patterns.map((_, index) => index);
+        const musicData = zzfxM(instruments, patterns, sequence, bpm);
+        const frameCount = Math.max(musicData[0].length, musicData[1].length);
+        if (frameCount === 0) {
+            throw new Error(`Radio track ${trackNumber} produced no audio.`);
+        }
+
+        const buffer = audioContext.createBuffer(2, frameCount, 44100);
+        buffer.getChannelData(0).set(musicData[0]);
+        buffer.getChannelData(1).set(musicData[1]);
+
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+
+        const gain = audioContext.createGain();
+        source.connect(gain);
+        gain.connect(audioContext.destination);
+        source.start();
+
+        this.currentSource = source;
+        this.currentGain = gain;
         this.currentTrack = trackNumber;
         this.isPlaying = true;
-        
-        // Play the ZZFXM song
-        zzfxM(...this.tracks[trackNumber].song);
-
         this.updateInterface();
     }
 
     stopMusic() {
-        // Stop all audio
-        zzfxX.stop();
-        
+        if (this.currentSource) {
+            this.currentSource.stop();
+            this.currentSource.disconnect();
+            this.currentSource = null;
+        }
+        if (this.currentGain) {
+            this.currentGain.disconnect();
+            this.currentGain = null;
+        }
+
         this.currentTrack = null;
         this.isPlaying = false;
         this.updateInterface();

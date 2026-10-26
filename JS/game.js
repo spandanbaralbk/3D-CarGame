@@ -108,6 +108,7 @@ class Game {
         // Game controls
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         document.addEventListener('keyup', (e) => this.handleKeyUp(e));
+        window.addEventListener('blur', () => this.clearControlInputs());
 
         // Menu buttons
         document.getElementById('startBtn')?.addEventListener('click', () => this.startGame());
@@ -151,8 +152,17 @@ class Game {
     }
 
     handleKeyDown(e) {
-        if (this.gameState === 'countdown') return; // Prevent controls during countdown
-        if (this.gameState !== 'playing' && e.key.toLowerCase() !== 'r') return;
+        if (e.key === 'Escape') {
+            if (this.gameState === 'playing') {
+                this.pauseGame();
+            } else if (this.gameState === 'paused') {
+                this.resumeGame();
+            }
+            e.preventDefault();
+            return;
+        }
+
+        if (this.gameState !== 'playing') return;
 
         switch(e.key.toLowerCase()) { // Convert to lowercase to handle both cases
             case 'arrowleft':
@@ -178,20 +188,18 @@ class Game {
             case ' ': // Space
                 this.car.brake = true;
                 this.soundManager.playSound('brake');
+                e.preventDefault();
                 break;
-            case 'r': // Restart game
-                this.restartGame();
-                break;
+            case 'r': // Toggle radio
+                this.toggleRadio();
+                return;
             case 'f':
                 this.toggleFreeRide();
                 break;
-            case 'escape':
-                if (this.gameState === 'playing') {
-                    this.pauseGame();
-                } else if (this.gameState === 'paused') {
-                    this.resumeGame();
-                }
-                break;
+        }
+
+        if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', ' '].includes(e.key.toLowerCase())) {
+            e.preventDefault();
         }
     }
 
@@ -221,6 +229,13 @@ class Game {
                 this.car.brake = false;
                 break;
         }
+    }
+
+    clearControlInputs() {
+        this.car.steerLeft = false;
+        this.car.steerRight = false;
+        this.car.accelerate = false;
+        this.car.brake = false;
     }
 
     toggleFreeRide() {
@@ -557,10 +572,6 @@ class Game {
 
      //high on score(jk)
      this.highScores.push({
-        score, date: new Date().toISOString()
-     });
-    
-     this.highScores.push({
          score, date : new Date().toISOString()
      });
      this.highScores.sort((a,b) => b.score - a.score);
@@ -569,9 +580,10 @@ class Game {
 
      //overlay
      const overlay = document.createElement('div');
-      overlay.innerHTML = `
-      <div class="gameover-box">
-      <h1>Game Over>
+     overlay.id = 'gameover-overlay';
+     overlay.innerHTML = `
+     <div class="gameover-box">
+     <h1>Game Over</h1>
       <p>You Crashed into a ${collidedWith}!</p>
       <div class="gameover-buttons">
       <button id="retry-button">
@@ -586,8 +598,8 @@ class Game {
       document.getElementById('retry-button').onclick = () =>{
         overlay.remove();
         this.hasCrashed = false;
-        this.startGameIfReady();
         this.restartGame();
+        this.startGameIfReady();
       };
 
       document.getElementById ('menu-button').onclick =() =>{
@@ -923,6 +935,7 @@ class Game {
 
     pauseGame() {
         if (this.gameState === 'playing') {
+            this.clearControlInputs();
             this.gameState = 'paused';
             this.updateMenuState('pause');
             this.showMenu();
@@ -992,5 +1005,5 @@ class Game {
 
 // Initialize game when the window loads
 window.addEventListener('load', () => {
-    new Game();
+    window.game = new Game();
 }); 

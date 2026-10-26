@@ -364,6 +364,7 @@ transform: skewX(-20deg);
       height: 8px;
       border-radius: 4px;
       -webkit-appearance: none;
+       appearance: button;
       background: #4A90E2;
      }
 
@@ -593,6 +594,7 @@ transform: skewX(-20deg);
             position: fixed;
             bottom: 20px;
             left: 20px;
+            pointer-events: auto;
             background: rgba(0,0,0,0.8);
             padding: 15px;
             border-radius: 10px;

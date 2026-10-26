@@ -33,7 +33,7 @@ const zzfxM = (instruments, patterns, sequence, BPM = 125) => {
     // for each channel in order until there are no more
     for(; hasMore; channelIndex++) {
         // reset current values
-        sampleBuffer = [hasMore = notFirstBeat = pitch = outSampleOffset = 0];
+        sampleBuffer = [notFirstBeat = pitch = outSampleOffset = 0];
 
         // for each pattern in sequence
         sequence.map((patternIndex, sequenceIndex) => {
