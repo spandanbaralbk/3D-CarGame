@@ -191,10 +191,10 @@ class Game {
                 e.preventDefault();
                 break;
             case 'r': // Toggle radio
-                this.toggleRadio();
+                if (!e.repeat) this.toggleRadio();
                 return;
             case 'f':
-                this.toggleFreeRide();
+                if (!e.repeat) this.toggleFreeRide();
                 break;
         }
 
